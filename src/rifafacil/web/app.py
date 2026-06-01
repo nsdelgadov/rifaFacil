@@ -22,16 +22,18 @@ templates.env.filters["pesos"] = _pesos
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "rifa": obtener_rifa()},
+        request=request,
+        name="index.html",
+        context={"rifa": obtener_rifa()},
     )
 
 
 @app.get("/boletos", response_class=HTMLResponse)
 async def grilla_boletos(request: Request):
     return templates.TemplateResponse(
-        "partials/grilla.html",
-        {"request": request, "rifa": obtener_rifa()},
+        request=request,
+        name="partials/grilla.html",
+        context={"rifa": obtener_rifa()},
     )
 
 
@@ -39,8 +41,9 @@ async def grilla_boletos(request: Request):
 async def formulario_reserva(request: Request, numero: int):
     boleto = obtener_rifa().obtener_boleto(numero)
     return templates.TemplateResponse(
-        "partials/formulario.html",
-        {"request": request, "boleto": boleto},
+        request=request,
+        name="partials/formulario.html",
+        context={"boleto": boleto},
     )
 
 
@@ -57,8 +60,9 @@ async def reservar_boleto(
         rifa.reservar_boleto(numero=numero, participante=participante)
     except ValueError as e:
         return templates.TemplateResponse(
-            "partials/error.html",
-            {"request": request, "mensaje": str(e)},
+            request=request,
+            name="partials/error.html",
+            context={"mensaje": str(e)},
         )
 
     mensaje_admin = (
@@ -67,9 +71,9 @@ async def reservar_boleto(
         f"Quedo atento para la transferencia de {_pesos(rifa.precio_boleto)}."
     )
     return templates.TemplateResponse(
-        "partials/confirmacion.html",
-        {
-            "request": request,
+        request=request,
+        name="partials/confirmacion.html",
+        context={
             "numero": numero,
             "enlace_admin": rifa.telefono_admin.enlace_whatsapp(mensaje_admin),
         },
