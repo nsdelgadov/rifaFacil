@@ -1,15 +1,22 @@
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
+from rifafacil.domain.boleto import Boleto
+from rifafacil.domain.numero_boleto import NumeroBoleto
+from rifafacil.domain.participante import Participante
+from rifafacil.domain.telefono import Telefono
+
 PRECIO_MAXIMO_BOLETO = 10_000
 TOTAL_MAXIMO_RIFA = 2_500_000
 
 
 class Rifa(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=False)
 
     nombre: str
     precio_boleto: int
     cantidad_boletos: int
+    telefono_admin: Telefono
+    boletos: list[Boleto] = []
 
     @field_validator("precio_boleto")
     @classmethod
@@ -17,7 +24,7 @@ class Rifa(BaseModel):
         if v <= 0:
             raise ValueError("El precio del boleto debe ser positivo")
         if v > PRECIO_MAXIMO_BOLETO:
-            raise ValueError(f"El precio del boleto no puede superar $10.000")
+            raise ValueError("El precio del boleto no puede superar $10.000")
         return v
 
     @model_validator(mode="after")
@@ -31,5 +38,27 @@ class Rifa(BaseModel):
         return self
 
     @classmethod
-    def crear(cls, nombre: str, precio_boleto: int, cantidad_boletos: int) -> "Rifa":
-        return cls(nombre=nombre, precio_boleto=precio_boleto, cantidad_boletos=cantidad_boletos)
+    def crear(cls, nombre: str, precio_boleto: int, cantidad_boletos: int, telefono_admin: Telefono) -> "Rifa":
+        boletos = [Boleto(numero=NumeroBoleto(valor=n)) for n in range(1, cantidad_boletos + 1)]
+        return cls(
+            nombre=nombre,
+            precio_boleto=precio_boleto,
+            cantidad_boletos=cantidad_boletos,
+            telefono_admin=telefono_admin,
+            boletos=boletos,
+        )
+
+    def obtener_boleto(self, numero: int) -> Boleto:
+        for b in self.boletos:
+            if b.numero.valor == numero:
+                return b
+        raise ValueError(f"El boleto N°{numero} no existe en esta rifa")
+
+    def reservar_boleto(self, numero: int, participante: Participante) -> None:
+        self.obtener_boleto(numero).reservar(participante)
+
+    def confirmar_pago(self, numero: int) -> None:
+        self.obtener_boleto(numero).confirmar_pago()
+
+    def liberar_boleto(self, numero: int) -> None:
+        self.obtener_boleto(numero).liberar()
