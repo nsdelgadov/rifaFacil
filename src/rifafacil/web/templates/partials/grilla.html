@@ -1,0 +1,24 @@
+<div id="grilla"
+     hx-get="/boletos"
+     hx-trigger="every 3s"
+     hx-swap="outerHTML">
+  <div class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2">
+    {% for boleto in rifa.boletos %}
+      {% if boleto.estado == 'disponible' %}
+        {% set cls = "bg-green-50 border-green-500 text-green-800 hover:bg-green-100 cursor-pointer" %}
+      {% elif boleto.estado == 'reservado' %}
+        {% set cls = "bg-yellow-50 border-yellow-500 text-yellow-800 cursor-not-allowed" %}
+      {% else %}
+        {% set cls = "bg-red-100 border-red-400 text-red-800 cursor-not-allowed" %}
+      {% endif %}
+      <div class="border-2 rounded-lg p-2 text-center text-sm font-mono font-medium transition-colors {{ cls }}"
+           {% if boleto.estado == 'disponible' %}
+           hx-get="/boletos/{{ boleto.numero.valor }}/formulario"
+           hx-target="#modal"
+           hx-swap="innerHTML"
+           {% endif %}>
+        {{ "%03d" | format(boleto.numero.valor) }}
+      </div>
+    {% endfor %}
+  </div>
+</div>
