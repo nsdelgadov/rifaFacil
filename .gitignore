@@ -1,0 +1,30 @@
+# pixi
+.pixi/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# build / distribución
+dist/
+build/
+*.egg-info/
+*.egg
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mutmut
+.mutmut-cache
+html/
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.user

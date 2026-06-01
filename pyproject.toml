@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rifafacil"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.0,<3",
+    "openpyxl>=3.1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rifafacil"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-v"
+
+[tool.importlinter]
+root_packages = ["rifafacil"]
+
+[[tool.importlinter.contracts]]
+name = "Domain independiente"
+type = "forbidden"
+source_modules = ["rifafacil.domain"]
+forbidden_modules = [
+    "rifafacil.application",
+    "rifafacil.infrastructure",
+]
+
+[[tool.importlinter.contracts]]
+name = "Application no depende de infrastructure"
+type = "forbidden"
+source_modules = ["rifafacil.application"]
+forbidden_modules = ["rifafacil.infrastructure"]
