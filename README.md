@@ -7,9 +7,10 @@ Proyecto de aprendizaje de **Domain-Driven Design**, **TDD sin mocks** y **Red-G
 ## Arranque rápido
 
 ```bash
-pixi install       # instala dependencias (solo la primera vez)
-pixi run test      # corre los tests
-pixi run cov       # tests + cobertura
+pixi install            # instala dependencias (solo la primera vez)
+pixi run test           # corre los tests
+pixi run dev            # levanta el servidor en http://localhost:8000
+pixi run cov            # tests + cobertura
 pixi run lint-imports   # verifica que las capas no se violen
 ```
 
@@ -89,7 +90,8 @@ rifaFacil/
 │   ├── domain/          ← Aggregates, Entities, Value Objects
 │   │                       NO depende de nada externo
 │   ├── application/     ← Casos de uso (orquesta el dominio)
-│   └── infrastructure/  ← Repositorios, archivos Excel, etc.
+│   ├── infrastructure/  ← Repositorios, SQLite, Excel, etc.
+│   └── web/             ← FastAPI + Jinja2 + HTMX
 │
 └── tests/
     └── domain/          ← Tests de dominio (sin base de datos, sin mocks)
@@ -101,22 +103,30 @@ rifaFacil/
 
 ## Ciclos completados
 
-### Ciclo 1 — Crear una Rifa ✅
-**Concepto**: Aggregate Root con factory method.  
-El constructor `Rifa.crear(...)` es la única forma de crear una rifa válida. No se puede instanciar directamente con datos inválidos.
+### Ciclos 1–2 — Crear Rifa con validaciones ✅
+**Conceptos**: Aggregate Root, factory method, invariantes de dominio.
 
-### Ciclo 2 — Precio del boleto debe ser positivo ✅
-**Concepto**: Invariante de dominio.  
-Una regla que el Aggregate garantiza **siempre**. No existe una `Rifa` con precio `<= 0` — el propio objeto se encarga de rechazarla en el momento de creación.
+### Ciclos 3 (fix) — Modelo monetario chileno ✅
+**Concepto**: El modelo refleja la realidad del negocio — pesos sin decimales, límites de rifa solidaria ($10.000 por boleto, $2.500.000 total).
+
+### Ciclo 4 — Value Objects ✅
+**Conceptos**: `EstadoBoleto` (máquina de estados), `NumeroBoleto`, `Telefono` (validación chilena + enlace WhatsApp).
+
+### Ciclos 5+6 — Boleto, Participante y reservas ✅
+**Conceptos**: Entity (`Boleto` con ciclo de vida), Value Object (`Participante` identificado por teléfono), Aggregate protegiendo las transiciones de estado.
+
+### Ciclo 7 — Capa web ✅
+**Conceptos**: FastAPI (rutas), Jinja2 (templates), HTMX (actualizaciones sin JavaScript).  
+La grilla se actualiza sola cada 3 segundos. Al reservar, se genera el enlace WhatsApp al administrador.
 
 ---
 
 ## Próximos ciclos
 
-| Ciclo | Qué vamos a construir | Concepto DDD |
-|-------|----------------------|--------------|
-| 3 | Emitir boletos | Entity + Value Object |
-| 4 | Realizar el sorteo | Domain Event |
-| 5 | Guardar y recuperar una rifa | Repository + Nullable |
-| 6 | Exportar boletos a Excel | Infrastructure adapter |
-| 7 | Detectar mutaciones que sobreviven | Mutation testing |
+| Ciclo | Qué construimos | Concepto / Motivo |
+|-------|----------------|-------------------|
+| **8** | Repository con SQLite | La rifa sobrevive reinicios — hoy se pierde todo al parar el servidor |
+| **9** | Panel de administrador | Confirmar pagos y liberar reservas desde una vista protegida |
+| **10** | Deploy en Render | La app en producción, accesible desde cualquier celular |
+| **11** | Mutation testing (mutmut) | Verificar que los tests realmente detectan errores en el dominio |
+| **12** | Mejoras de UX en la grilla | Ver nombre del participante en boleto reservado/pagado (con elipsis); boletos más anchos; accesibilidad para daltonismo: nombre en azul para reservados, tachado para pagados |
