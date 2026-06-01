@@ -1,0 +1,21 @@
+<div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm text-center">
+    <div class="text-5xl mb-4">🎉</div>
+    <h2 class="text-xl font-bold mb-1">¡Boleto N°{{ "%03d" | format(numero) }} reservado!</h2>
+    <p class="text-gray-500 text-sm mb-6">
+      Avisa al administrador para coordinar la transferencia.
+    </p>
+    <a href="{{ enlace_admin }}"
+       target="_blank" rel="noopener"
+       class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl px-6 py-3 mb-3 transition-colors">
+      <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z M12 0C5.373 0 0 5.373 0 12c0 2.125.558 4.121 1.535 5.856L.057 23.886l6.188-1.452A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.96 0-3.8-.537-5.375-1.466l-.385-.228-3.672.862.93-3.603-.25-.405A9.937 9.937 0 012 12c0-5.514 4.486-10 10-10s10 4.486 10 10-4.486 10-10 10z"/>
+      </svg>
+      Avisar al administrador
+    </a>
+    <button onclick="document.getElementById('modal').innerHTML=''"
+            class="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+      Cerrar
+    </button>
+  </div>
+</div>
