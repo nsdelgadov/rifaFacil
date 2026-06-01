@@ -36,3 +36,9 @@ name = "Application no depende de infrastructure"
 type = "forbidden"
 source_modules = ["rifafacil.application"]
 forbidden_modules = ["rifafacil.infrastructure"]
+
+[[tool.importlinter.contracts]]
+name = "Web no importa de infrastructure"
+type = "forbidden"
+source_modules = ["rifafacil.web"]
+forbidden_modules = ["rifafacil.infrastructure"]
