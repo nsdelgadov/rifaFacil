@@ -119,14 +119,34 @@ rifaFacil/
 **Conceptos**: FastAPI (rutas), Jinja2 (templates), HTMX (actualizaciones sin JavaScript).  
 La grilla se actualiza sola cada 3 segundos. Al reservar, se genera el enlace WhatsApp al administrador.
 
+### Ciclo 8 — Repository con SQLite ✅
+**Concepto**: Repository Pattern — el dominio no sabe dónde viven los datos. `SqliteRifaRepository` serializa la `Rifa` completa con Pydantic; la app sobrevive reinicios.
+
+### Ciclo 9 — Panel de administrador ✅
+**Conceptos**: HTTP Basic Auth con `secrets.compare_digest` (protección contra timing attacks). Credenciales via variables de entorno, nunca hardcodeadas.  
+El admin confirma pagos y libera reservas desde `/admin`. HTMX actualiza solo la fila afectada.
+
+### Ciclo 10 — Deploy en Render ✅
+**Concepto**: separación entre dependencias de desarrollo (pixi) y de producción (`pyproject.toml`). Variables sensibles se configuran en el dashboard de Render, no en el repo.
+
+> **Nota**: el plan gratuito de Render tiene sistema de archivos efímero — `rifa.db` se pierde al reiniciar. Para producción real, considerar Render Disk (pago) o migrar a PostgreSQL.
+
+#### Pasos para deployar
+
+1. Crear cuenta en [render.com](https://render.com)
+2. New → Web Service → conectar este repositorio
+3. Render detecta `render.yaml` automáticamente
+4. En **Environment** del dashboard, setear manualmente:
+   - `RIFA_TELEFONO_ADMIN` — tu número con código de país (ej: `+56912345678`)
+   - `ADMIN_USER` — usuario del panel admin
+   - `ADMIN_PASSWORD` — contraseña del panel admin
+5. Deploy
+
 ---
 
 ## Próximos ciclos
 
 | Ciclo | Qué construimos | Concepto / Motivo |
 |-------|----------------|-------------------|
-| **8** | Repository con SQLite | La rifa sobrevive reinicios — hoy se pierde todo al parar el servidor |
-| **9** | Panel de administrador | Confirmar pagos y liberar reservas desde una vista protegida |
-| **10** | Deploy en Render | La app en producción, accesible desde cualquier celular |
 | **11** | Mutation testing (mutmut) | Verificar que los tests realmente detectan errores en el dominio |
 | **12** | Mejoras de UX en la grilla | Ver nombre del participante en boleto reservado/pagado (con elipsis); boletos más anchos; accesibilidad para daltonismo: nombre en azul para reservados, tachado para pagados |
