@@ -1,12 +1,33 @@
+import os
+import secrets
 from pathlib import Path
 
-from fastapi import FastAPI, Form, Request
+from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 
 from rifafacil.domain.participante import Participante
 from rifafacil.domain.telefono import Telefono
 from rifafacil.web.store import guardar_rifa, obtener_rifa
+
+_security = HTTPBasic()
+
+
+def _verificar_admin(credentials: HTTPBasicCredentials = Depends(_security)) -> None:
+    usuario_ok = secrets.compare_digest(
+        credentials.username.encode(),
+        os.getenv("ADMIN_USER", "admin").encode(),
+    )
+    password_ok = secrets.compare_digest(
+        credentials.password.encode(),
+        os.getenv("ADMIN_PASSWORD", "").encode(),
+    )
+    if not (usuario_ok and password_ok):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            headers={"WWW-Authenticate": "Basic"},
+        )
 
 app = FastAPI(title="rifaFacil")
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
@@ -78,4 +99,47 @@ async def reservar_boleto(
             "numero": numero,
             "enlace_admin": rifa.telefono_admin.enlace_whatsapp(mensaje_admin),
         },
+    )
+
+
+@app.get("/admin", response_class=HTMLResponse)
+async def panel_admin(request: Request, _: None = Depends(_verificar_admin)):
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/panel.html",
+        context={"rifa": obtener_rifa()},
+    )
+
+
+@app.post("/admin/boletos/{numero}/confirmar", response_class=HTMLResponse)
+async def admin_confirmar(request: Request, numero: int, _: None = Depends(_verificar_admin)):
+    rifa = obtener_rifa()
+    try:
+        rifa.confirmar_pago(numero)
+        guardar_rifa(rifa)
+    except ValueError as e:
+        return templates.TemplateResponse(
+            request=request, name="partials/error.html", context={"mensaje": str(e)}
+        )
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/partials/fila_boleto.html",
+        context={"boleto": rifa.obtener_boleto(numero)},
+    )
+
+
+@app.post("/admin/boletos/{numero}/liberar", response_class=HTMLResponse)
+async def admin_liberar(request: Request, numero: int, _: None = Depends(_verificar_admin)):
+    rifa = obtener_rifa()
+    try:
+        rifa.liberar_boleto(numero)
+        guardar_rifa(rifa)
+    except ValueError as e:
+        return templates.TemplateResponse(
+            request=request, name="partials/error.html", context={"mensaje": str(e)}
+        )
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/partials/fila_boleto.html",
+        context={"boleto": rifa.obtener_boleto(numero)},
     )
