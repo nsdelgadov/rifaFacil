@@ -1,0 +1,29 @@
+import pytest
+from fastapi.testclient import TestClient
+
+import rifafacil.web.store as store_module
+from rifafacil.domain.participante import Participante
+from rifafacil.domain.rifa import Rifa
+from rifafacil.domain.telefono import Telefono
+from rifafacil.infrastructure.sqlite_rifa_repository import SqliteRifaRepository
+from rifafacil.web.app import app
+
+
+@pytest.fixture
+def client(tmp_path, monkeypatch):
+    monkeypatch.setenv("ADMIN_USER", "admin")
+    monkeypatch.setenv("ADMIN_PASSWORD", "secret")
+
+    repo = SqliteRifaRepository(str(tmp_path / "test.db"))
+    rifa = Rifa.crear(
+        nombre="Rifa Test",
+        precio_boleto=5_000,
+        cantidad_boletos=10,
+        telefono_admin=Telefono(numero="+56912345678"),
+    )
+    participante = Participante(nombre="Ana", telefono=Telefono(numero="+56987654321"))
+    rifa.reservar_boleto(1, participante)
+    repo.guardar(rifa)
+
+    monkeypatch.setattr(store_module, "_repo", repo)
+    return TestClient(app)
