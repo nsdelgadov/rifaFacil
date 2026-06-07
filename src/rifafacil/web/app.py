@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 
 from rifafacil.domain.participante import Participante
 from rifafacil.domain.telefono import Telefono
-from rifafacil.web.store import obtener_rifa
+from rifafacil.web.store import guardar_rifa, obtener_rifa
 
 app = FastAPI(title="rifaFacil")
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
@@ -58,6 +58,7 @@ async def reservar_boleto(
     try:
         participante = Participante(nombre=nombre, telefono=Telefono(numero=telefono))
         rifa.reservar_boleto(numero=numero, participante=participante)
+        guardar_rifa(rifa)
     except ValueError as e:
         return templates.TemplateResponse(
             request=request,

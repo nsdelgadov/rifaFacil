@@ -23,6 +23,9 @@ htmlcov/
 .mutmut-cache
 html/
 
+# SQLite
+*.db
+
 # IDEs
 .vscode/
 .idea/
