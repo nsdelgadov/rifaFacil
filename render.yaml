@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: rifafacil
+    runtime: python
+    buildCommand: pip install -e .
+    startCommand: uvicorn rifafacil.web.app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: RIFA_NOMBRE
+        sync: false
+      - key: RIFA_PRECIO_BOLETO
+        sync: false
+      - key: RIFA_CANTIDAD_BOLETOS
+        sync: false
+      - key: RIFA_TELEFONO_ADMIN
+        sync: false
+      - key: RIFA_DB_PATH
+        sync: false
+      - key: ADMIN_USER
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
