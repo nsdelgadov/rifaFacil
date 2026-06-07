@@ -26,6 +26,9 @@ html/
 # SQLite
 *.db
 
+# Variables de entorno (credenciales locales)
+.env
+
 # IDEs
 .vscode/
 .idea/
