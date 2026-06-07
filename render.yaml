@@ -6,15 +6,14 @@ services:
     startCommand: uvicorn rifafacil.web.app:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: RIFA_NOMBRE
-        value: Rifa Solidaria
+        sync: false
       - key: RIFA_PRECIO_BOLETO
-        value: "5000"
+        sync: false
       - key: RIFA_CANTIDAD_BOLETOS
-        value: "50"
-      - key: RIFA_DB_PATH
-        value: rifa.db
-      # Estos tres se configuran manualmente en el dashboard de Render (no quedan en el repo)
+        sync: false
       - key: RIFA_TELEFONO_ADMIN
+        sync: false
+      - key: RIFA_DB_PATH
         sync: false
       - key: ADMIN_USER
         sync: false
