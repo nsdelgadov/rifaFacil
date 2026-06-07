@@ -148,5 +148,8 @@ El admin confirma pagos y libera reservas desde `/admin`. HTMX actualiza solo la
 
 | Ciclo | Qué construimos | Concepto / Motivo |
 |-------|----------------|-------------------|
-| **11** | Mutation testing (mutmut) | Verificar que los tests realmente detectan errores en el dominio |
+| **11** | Mutation testing (mutmut) | Verificar que los tests realmente detectan errores en el dominio — mutmut modifica el código automáticamente y comprueba que los tests fallen |
 | **12** | Mejoras de UX en la grilla | Ver nombre del participante en boleto reservado/pagado (con elipsis); boletos más anchos; accesibilidad para daltonismo: nombre en azul para reservados, tachado para pagados |
+| **13** | Optimizaciones para Render | Reducir requests innecesarias: el auto-refresh de la grilla pasa de cada 3 s a cada 60 s |
+| **14** | Confianza y transparencia | Link a campaña (Instagram/Facebook), imágenes de la causa, datos de cuenta bancaria para donaciones directas sin participar en la rifa |
+| **15** | Selección múltiple de boletos | Elegir entre 1 y 10 boletos a la vez — flujo para quienes quieren aportar más |
