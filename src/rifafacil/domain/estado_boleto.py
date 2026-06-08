@@ -1,7 +1,7 @@
-from enum import StrEnum
+from enum import Enum
 
 
-class EstadoBoleto(StrEnum):
+class EstadoBoleto(str, Enum):
     DISPONIBLE = "disponible"
     RESERVADO = "reservado"
     PAGADO = "pagado"
