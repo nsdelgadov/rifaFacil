@@ -21,6 +21,7 @@ dev = [
     "pytest-cov>=5.0",
     "mutmut>=2.0,<3",
     "import-linter>=2.0",
+    "httpx2",
 ]
 
 [tool.hatch.build.targets.wheel]
