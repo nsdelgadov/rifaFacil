@@ -26,6 +26,10 @@ dev = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/rifafacil"]
 
+[tool.mutmut]
+paths_to_mutate = "src/rifafacil/domain/"
+tests_dir = "tests/"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
