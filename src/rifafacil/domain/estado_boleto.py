@@ -7,10 +7,8 @@ class EstadoBoleto(str, Enum):
     PAGADO = "pagado"
 
     def transiciones_validas(self) -> set["EstadoBoleto"]:
-        match self:
-            case EstadoBoleto.DISPONIBLE:
-                return {EstadoBoleto.RESERVADO}
-            case EstadoBoleto.RESERVADO:
-                return {EstadoBoleto.PAGADO, EstadoBoleto.DISPONIBLE}
-            case EstadoBoleto.PAGADO:
-                return set()
+        if self == EstadoBoleto.DISPONIBLE:
+            return {EstadoBoleto.RESERVADO}
+        if self == EstadoBoleto.RESERVADO:
+            return {EstadoBoleto.PAGADO, EstadoBoleto.DISPONIBLE}
+        return set()
