@@ -23,7 +23,9 @@ jobs:
         run: pip install -e ".[dev]"
 
       - name: Correr mutation testing sobre el dominio
-        run: mutmut run --paths-to-mutate src/rifafacil/domain
+        run: |
+          set -o pipefail
+          mutmut run --paths-to-mutate src/rifafacil/domain 2>&1 | tail -3
         continue-on-error: true
 
       - name: Mostrar resultados
