@@ -62,6 +62,14 @@ def test_confirmar_pago_de_boleto_reservado():
     assert b.estado == EstadoBoleto.PAGADO
 
 
+def test_participante_sigue_asignado_tras_confirmar_pago():
+    b = _boleto()
+    b.reservar(_participante())
+    b.confirmar_pago()
+
+    assert b.participante.nombre == "Ana Torres"
+
+
 def test_no_se_puede_confirmar_boleto_disponible():
     with pytest.raises(ValueError, match="confirmarse"):
         _boleto().confirmar_pago()

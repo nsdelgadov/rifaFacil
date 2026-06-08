@@ -11,6 +11,11 @@ def test_crear_participante():
     assert p.telefono.numero == "+56912345678"
 
 
+def test_nombre_con_espacios_queda_recortado():
+    p = Participante(nombre="  Ana  ", telefono=Telefono(numero="+56912345678"))
+    assert p.nombre == "Ana"
+
+
 def test_nombre_vacio_es_invalido():
     with pytest.raises(ValueError, match="vacío"):
         Participante(nombre="   ", telefono=Telefono(numero="+56912345678"))
