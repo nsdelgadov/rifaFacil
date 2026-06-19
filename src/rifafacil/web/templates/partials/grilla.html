@@ -7,9 +7,9 @@
       {% if boleto.estado == 'disponible' %}
         {% set cls = "bg-green-50 border-green-500 text-green-800 hover:bg-green-100 cursor-pointer" %}
       {% elif boleto.estado == 'reservado' %}
-        {% set cls = "bg-yellow-50 border-yellow-500 text-yellow-800 cursor-not-allowed" %}
+        {% set cls = "bg-blue-50 border-blue-500 text-blue-800 cursor-not-allowed" %}
       {% else %}
-        {% set cls = "bg-red-100 border-red-400 text-red-800 cursor-not-allowed" %}
+        {% set cls = "bg-red-100 border-red-400 text-red-800 line-through cursor-not-allowed" %}
       {% endif %}
       <div class="border-2 rounded-lg p-2 text-center text-sm font-mono font-medium transition-colors min-w-0 {{ cls }}"
            {% if boleto.estado == 'disponible' %}
