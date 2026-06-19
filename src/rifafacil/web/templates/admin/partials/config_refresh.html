@@ -1,0 +1,9 @@
+<form hx-post="/admin/config/refresh"
+      hx-swap="outerHTML"
+      class="flex items-center gap-2">
+  <span class="text-sm text-gray-600">Actualización grilla:</span>
+  <input type="number" name="segundos" value="{{ refresh_segundos }}"
+         class="border rounded px-2 py-1 text-sm w-20 text-center" />
+  <span class="text-xs text-gray-400">seg · mín 5 · -1 = nunca</span>
+  <button class="bg-gray-700 text-white text-xs px-3 py-1 rounded hover:bg-gray-800">Guardar</button>
+</form>

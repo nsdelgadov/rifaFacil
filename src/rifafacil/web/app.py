@@ -30,6 +30,7 @@ def _verificar_admin(credentials: HTTPBasicCredentials = Depends(_security)) -> 
         )
 
 app = FastAPI(title="rifaFacil")
+app.state.refresh_segundos = int(os.getenv("GRILLA_REFRESH_SEGUNDOS", "60"))
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
 
@@ -45,7 +46,7 @@ async def index(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"rifa": obtener_rifa()},
+        context={"rifa": obtener_rifa(), "refresh_segundos": request.app.state.refresh_segundos},
     )
 
 
@@ -54,7 +55,7 @@ async def grilla_boletos(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="partials/grilla.html",
-        context={"rifa": obtener_rifa()},
+        context={"rifa": obtener_rifa(), "refresh_segundos": request.app.state.refresh_segundos},
     )
 
 
@@ -107,7 +108,23 @@ async def panel_admin(request: Request, _: None = Depends(_verificar_admin)):
     return templates.TemplateResponse(
         request=request,
         name="admin/panel.html",
-        context={"rifa": obtener_rifa()},
+        context={"rifa": obtener_rifa(), "refresh_segundos": request.app.state.refresh_segundos},
+    )
+
+
+@app.post("/admin/config/refresh", response_class=HTMLResponse)
+async def admin_config_refresh(
+    request: Request,
+    segundos: int = Form(),
+    _: None = Depends(_verificar_admin),
+):
+    if segundos != -1:
+        segundos = max(5, segundos)
+    request.app.state.refresh_segundos = segundos
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/partials/config_refresh.html",
+        context={"refresh_segundos": segundos},
     )
 
 

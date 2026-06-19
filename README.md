@@ -129,6 +129,14 @@ El admin confirma pagos y libera reservas desde `/admin`. HTMX actualiza solo la
 ### Ciclo 10 — Deploy en Render ✅
 **Concepto**: separación entre dependencias de desarrollo (pixi) y de producción (`pyproject.toml`). Variables sensibles se configuran en el dashboard de Render, no en el repo.
 
+### Ciclo 11 — Mutation testing ✅
+
+**Concepto**: Verificar que los tests realmente detectan errores — mutmut modifica el código automáticamente y comprueba que los tests fallen. Corre en GitHub Actions (no en Windows nativo). El log de CI muestra el diff de cada mutante que sobrevive.
+
+### Ciclo 12 — UX/UI de la grilla pública ✅
+
+**Conceptos**: Grid con doble ancho de celda (3/4/5 columnas). Nombre del participante visible con ellipsis. Click/tap en boleto usado muestra tooltip flotante. Accesibilidad: reservados en azul, pagados con tachado. Header sticky al hacer scroll. Intervalo de refresco baja de 3 s a 60 s; el admin puede cambiarlo en vivo desde el panel (mín. 5 s, -1 = nunca) vía env var `GRILLA_REFRESH_SEGUNDOS`.
+
 > **Nota**: el plan gratuito de Render tiene sistema de archivos efímero — `rifa.db` se pierde al reiniciar. Para producción real, considerar Render Disk (pago) o migrar a PostgreSQL.
 
 #### Pasos para deployar
@@ -148,8 +156,8 @@ El admin confirma pagos y libera reservas desde `/admin`. HTMX actualiza solo la
 
 | Ciclo | Qué construimos | Concepto / Motivo |
 |-------|----------------|-------------------|
-| **11** | Mutation testing (mutmut) | Verificar que los tests realmente detectan errores en el dominio — mutmut modifica el código automáticamente y comprueba que los tests fallen |
-| **12** | Mejoras de UX en la grilla | Ver nombre del participante en boleto reservado/pagado (con elipsis); boletos más anchos; accesibilidad para daltonismo: nombre en azul para reservados, tachado para pagados |
-| **13** | Optimizaciones para Render | Reducir requests innecesarias: el auto-refresh de la grilla pasa de cada 3 s a cada 60 s |
+| **13** | UX del panel de administrador | Mejorar la experiencia del admin: diseño, flujos y usabilidad del panel |
 | **14** | Confianza y transparencia | Link a campaña (Instagram/Facebook), imágenes de la causa, datos de cuenta bancaria para donaciones directas sin participar en la rifa |
 | **15** | Selección múltiple de boletos | Elegir entre 1 y 10 boletos a la vez — flujo para quienes quieren aportar más |
+| **16** | Múltiples rifas — un solo admin | Soporte para más de una rifa activa en el mismo servidor, todas gestionadas por el mismo administrador |
+| **17** | Múltiples rifas — admin por rifa | Cada rifa tiene su propio administrador con credenciales independientes |

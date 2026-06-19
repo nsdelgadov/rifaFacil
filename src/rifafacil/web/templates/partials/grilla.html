@@ -1,24 +1,54 @@
 <div id="grilla"
+     {% if refresh_segundos != -1 %}
      hx-get="/boletos"
-     hx-trigger="every 3s"
-     hx-swap="outerHTML">
-  <div class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2">
+     hx-trigger="every {{ refresh_segundos }}s"
+     hx-swap="outerHTML"
+     {% endif %}>
+  <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
     {% for boleto in rifa.boletos %}
       {% if boleto.estado == 'disponible' %}
         {% set cls = "bg-green-50 border-green-500 text-green-800 hover:bg-green-100 cursor-pointer" %}
       {% elif boleto.estado == 'reservado' %}
-        {% set cls = "bg-yellow-50 border-yellow-500 text-yellow-800 cursor-not-allowed" %}
+        {% set cls = "bg-blue-50 border-blue-500 text-blue-800 cursor-not-allowed" %}
       {% else %}
-        {% set cls = "bg-red-100 border-red-400 text-red-800 cursor-not-allowed" %}
+        {% set cls = "bg-red-100 border-red-400 text-red-800 line-through cursor-not-allowed" %}
       {% endif %}
-      <div class="border-2 rounded-lg p-2 text-center text-sm font-mono font-medium transition-colors {{ cls }}"
+      <div class="border-2 rounded-lg p-2 text-center text-sm font-mono font-medium transition-colors min-w-0 {{ cls }}"
            {% if boleto.estado == 'disponible' %}
            hx-get="/boletos/{{ boleto.numero.valor }}/formulario"
            hx-target="#modal"
            hx-swap="innerHTML"
+           {% elif boleto.participante %}
+           data-info="{{ boleto.estado | capitalize }}: {{ boleto.participante.nombre }}"
            {% endif %}>
         {{ "%03d" | format(boleto.numero.valor) }}
+        {% if boleto.participante %}
+          <div class="text-xs font-sans font-normal truncate mt-0.5">{{ boleto.participante.nombre }}</div>
+        {% endif %}
       </div>
     {% endfor %}
   </div>
+
+  <div id="boleto-tip" class="fixed bg-gray-800 text-white text-xs rounded px-3 py-1.5 z-50 hidden pointer-events-none shadow-lg"></div>
 </div>
+
+<script>
+  (function () {
+    var tip = document.getElementById('boleto-tip');
+    document.addEventListener('click', function (e) {
+      var el = e.target.closest('[data-info]');
+      if (el) {
+        tip.textContent = el.dataset.info;
+        tip.classList.remove('hidden');
+        var x = Math.max(4, e.clientX - tip.offsetWidth / 2);
+        x = Math.min(x, window.innerWidth - tip.offsetWidth - 4);
+        tip.style.left = x + 'px';
+        tip.style.top = (e.clientY - 44) + 'px';
+        clearTimeout(tip._t);
+        tip._t = setTimeout(function () { tip.classList.add('hidden'); }, 2000);
+      } else {
+        tip.classList.add('hidden');
+      }
+    });
+  })();
+</script>
