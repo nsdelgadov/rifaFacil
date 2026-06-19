@@ -1,7 +1,9 @@
 <div id="grilla"
+     {% if refresh_segundos != -1 %}
      hx-get="/boletos"
-     hx-trigger="every 3s"
-     hx-swap="outerHTML">
+     hx-trigger="every {{ refresh_segundos }}s"
+     hx-swap="outerHTML"
+     {% endif %}>
   <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
     {% for boleto in rifa.boletos %}
       {% if boleto.estado == 'disponible' %}

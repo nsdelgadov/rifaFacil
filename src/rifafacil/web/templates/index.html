@@ -24,6 +24,12 @@
 
   {% include "partials/grilla.html" %}
 
-  <p class="text-center text-xs text-gray-400 mt-8">La grilla se actualiza cada 3 segundos.</p>
+  <p class="text-center text-xs text-gray-400 mt-8">
+    {% if refresh_segundos == -1 %}
+      La grilla no se actualiza automáticamente.
+    {% else %}
+      La grilla se actualiza cada {{ refresh_segundos }} segundos.
+    {% endif %}
+  </p>
 </div>
 {% endblock %}
