@@ -156,3 +156,9 @@ El admin confirma pagos y libera reservas desde `/admin`. HTMX actualiza solo la
 | **18** | Múltiples rifas — un solo admin | Soporte para más de una rifa activa en el mismo servidor, todas gestionadas por el mismo administrador |
 | **19** | Múltiples rifas — admin por rifa | Cada rifa tiene su propio administrador con credenciales independientes |
 | **20** | Migración a PostgreSQL + JSONB | Reemplazar SQLite por PostgreSQL en AWS RDS — misma flexibilidad de esquema mientras el dominio evoluciona, sin cambiar el dominio (solo la capa de infraestructura) |
+
+## Mejoras menores (por debajo de un ciclo)
+
+| Tarea | Detalle |
+|-------|---------|
+| Versión via env var | Reemplazar `importlib.metadata` por `APP_VERSION=os.getenv("APP_VERSION")` en `/etc/rifafacil.env` — elimina el `--force-reinstall` en cada deploy |

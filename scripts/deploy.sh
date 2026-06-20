@@ -5,5 +5,5 @@ set -e
 cd /srv/rifafacil
 git pull origin main
 source .venv/bin/activate
-pip install -e . --quiet
+pip install -e . --force-reinstall --no-deps --quiet
 sudo systemctl restart rifafacil
