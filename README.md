@@ -137,18 +137,7 @@ El admin confirma pagos y libera reservas desde `/admin`. HTMX actualiza solo la
 
 **Conceptos**: Grid con doble ancho de celda (3/4/5 columnas). Nombre del participante visible con ellipsis. Click/tap en boleto usado muestra tooltip flotante. Accesibilidad: reservados en azul, pagados con tachado. Header sticky al hacer scroll. Intervalo de refresco baja de 3 s a 60 s; el admin puede cambiarlo en vivo desde el panel (mín. 5 s, -1 = nunca) vía env var `GRILLA_REFRESH_SEGUNDOS`.
 
-> **Nota**: el plan gratuito de Render tiene sistema de archivos efímero — `rifa.db` se pierde al reiniciar. Para producción real, considerar Render Disk (pago) o migrar a PostgreSQL.
-
-#### Pasos para deployar
-
-1. Crear cuenta en [render.com](https://render.com)
-2. New → Web Service → conectar este repositorio
-3. Render detecta `render.yaml` automáticamente
-4. En **Environment** del dashboard, setear manualmente:
-   - `RIFA_TELEFONO_ADMIN` — tu número con código de país (ej: `+56912345678`)
-   - `ADMIN_USER` — usuario del panel admin
-   - `ADMIN_PASSWORD` — contraseña del panel admin
-5. Deploy
+> **Nota**: el plan gratuito de Render tiene sistema de archivos efímero — `rifa.db` se pierde al reiniciar. Se migrará a AWS EC2 + EBS para persistencia real (ciclo 13).
 
 ---
 
@@ -156,8 +145,10 @@ El admin confirma pagos y libera reservas desde `/admin`. HTMX actualiza solo la
 
 | Ciclo | Qué construimos | Concepto / Motivo |
 |-------|----------------|-------------------|
-| **13** | UX del panel de administrador | Mejorar la experiencia del admin: diseño, flujos y usabilidad del panel |
-| **14** | Confianza y transparencia | Link a campaña (Instagram/Facebook), imágenes de la causa, datos de cuenta bancaria para donaciones directas sin participar en la rifa |
-| **15** | Selección múltiple de boletos | Elegir entre 1 y 10 boletos a la vez — flujo para quienes quieren aportar más |
-| **16** | Múltiples rifas — un solo admin | Soporte para más de una rifa activa en el mismo servidor, todas gestionadas por el mismo administrador |
-| **17** | Múltiples rifas — admin por rifa | Cada rifa tiene su propio administrador con credenciales independientes |
+| **13** | Deploy en AWS EC2 + EBS | Migrar de Render a EC2 t3.micro con volumen EBS para que `rifa.db` sobreviva reinicios. CI/CD con GitHub Actions |
+| **14** | UX del panel de administrador | Mejorar la experiencia del admin: diseño, flujos y usabilidad del panel |
+| **15** | Confianza y transparencia | Link a campaña (Instagram/Facebook), imágenes de la causa, datos de cuenta bancaria para donaciones directas |
+| **16** | Selección múltiple de boletos | Elegir entre 1 y 10 boletos a la vez — flujo para quienes quieren aportar más |
+| **17** | Múltiples rifas — un solo admin | Soporte para más de una rifa activa en el mismo servidor, todas gestionadas por el mismo administrador |
+| **18** | Múltiples rifas — admin por rifa | Cada rifa tiene su propio administrador con credenciales independientes |
+| **19** | Migración a PostgreSQL + JSONB | Reemplazar SQLite por PostgreSQL en AWS RDS — misma flexibilidad de esquema mientras el dominio evoluciona, sin cambiar el dominio (solo la capa de infraestructura) |
