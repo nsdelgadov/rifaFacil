@@ -159,6 +159,6 @@ El admin confirma pagos y libera reservas desde `/admin`. HTMX actualiza solo la
 
 ## Mejoras menores (por debajo de un ciclo)
 
-| Tarea | Detalle |
-|-------|---------|
-| Versión via env var | Reemplazar `importlib.metadata` por `APP_VERSION=os.getenv("APP_VERSION")` en `/etc/rifafacil.env` — elimina el `--force-reinstall` en cada deploy |
+| Tarea | Estado | Detalle |
+|-------|--------|---------|
+| Versión en footer | 🔄 Incompleto | El código ya lee `APP_VERSION` desde env var (`os.getenv`). Falta agregar `APP_VERSION=0.14.0` en `/etc/rifafacil.env` del servidor y hacer `sudo systemctl restart rifafacil`. Mientras tanto el footer muestra `?` |
