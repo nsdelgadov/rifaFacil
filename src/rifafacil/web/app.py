@@ -39,6 +39,7 @@ def _pesos(valor: int) -> str:
 
 
 templates.env.filters["pesos"] = _pesos
+templates.env.globals["version"] = os.getenv("APP_VERSION", "?")
 
 
 @app.get("/", response_class=HTMLResponse)
