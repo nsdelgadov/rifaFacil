@@ -24,9 +24,9 @@ if [ ! -f /etc/rifafacil.env ]; then
   exit 1
 fi
 
-# 1. Actualizar sistema e instalar Python 3.12
+# 1. Actualizar sistema e instalar dependencias
 sudo dnf update -y
-sudo dnf install -y git python3.12 python3.12-pip
+sudo dnf install -y git python3.12 python3.12-pip nginx certbot python3-certbot-nginx
 
 # 2. Montar volumen EBS
 DEVICE=/dev/nvme1n1
@@ -58,7 +58,7 @@ After=network.target
 User=ec2-user
 WorkingDirectory=/srv/rifafacil
 EnvironmentFile=/etc/rifafacil.env
-ExecStart=/srv/rifafacil/.venv/bin/uvicorn rifafacil.web.app:app --host 0.0.0.0 --port 80
+ExecStart=/srv/rifafacil/.venv/bin/uvicorn rifafacil.web.app:app --host 0.0.0.0 --port 8000
 Restart=always
 RestartSec=3
 AmbientCapabilities=CAP_NET_BIND_SERVICE
@@ -71,4 +71,14 @@ sudo systemctl daemon-reload
 sudo systemctl enable rifafacil
 sudo systemctl start rifafacil
 
+# 5. Configurar nginx como reverse proxy
+sudo cp /srv/rifafacil/nginx/rifafacil.conf /etc/nginx/conf.d/rifafacil.conf
+sudo systemctl enable nginx
+sudo systemctl start nginx
+
+# 6. Certificado HTTPS (requiere que el DNS ya esté propagado)
+# Correr manualmente cuando rifafacil.xyz apunte a esta IP:
+#   sudo certbot --nginx -d rifafacil.xyz -d www.rifafacil.xyz
+
 echo "Listo. App corriendo en http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
+echo "Cuando el DNS propague, correr: sudo certbot --nginx -d rifafacil.xyz -d www.rifafacil.xyz"
