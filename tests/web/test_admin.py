@@ -83,3 +83,61 @@ def test_config_refresh_persiste_valor_en_repositorio(client):
     import rifafacil.web.store as store_module
     client.post("/admin/config/refresh", data={"segundos": "30"}, auth=ADMIN)
     assert store_module.obtener_refresh_segundos() == 30
+
+
+# ── Sort y búsqueda ────────────────────────────────────────────────────────
+
+def test_ordenar_por_estado_asc_pone_reservados_antes_que_pagados(client_completo):
+    response = client_completo.get("/admin/tabla?orden=estado&dir=asc", auth=ADMIN)
+    text = response.text
+    assert text.index("Ana") < text.index("Carlos")
+    assert text.index("Bob") < text.index("Carlos")
+
+
+def test_ordenar_por_estado_desc_pone_pagados_primero(client_completo):
+    response = client_completo.get("/admin/tabla?orden=estado&dir=desc", auth=ADMIN)
+    text = response.text
+    assert text.index("Carlos") < text.index("Ana")
+    assert text.index("Carlos") < text.index("Bob")
+
+
+def test_ordenar_por_reservado_asc_pone_mas_antiguo_primero(client_completo):
+    response = client_completo.get("/admin/tabla?orden=reservado_en&dir=asc", auth=ADMIN)
+    text = response.text
+    assert text.index("Ana") < text.index("Carlos") < text.index("Bob")
+
+
+def test_ordenar_por_reservado_desc_pone_mas_reciente_primero(client_completo):
+    response = client_completo.get("/admin/tabla?orden=reservado_en&dir=desc", auth=ADMIN)
+    text = response.text
+    assert text.index("Bob") < text.index("Carlos") < text.index("Ana")
+
+
+def test_buscar_por_nombre_filtra_resultados(client_completo):
+    response = client_completo.get("/admin/tabla?q=Ana", auth=ADMIN)
+    assert "Ana" in response.text
+    assert "Bob" not in response.text
+    assert "Carlos" not in response.text
+
+
+def test_buscar_por_numero_filtra_resultados(client_completo):
+    response = client_completo.get("/admin/tabla?q=003", auth=ADMIN)
+    assert "Carlos" in response.text
+    assert "Ana" not in response.text
+    assert "Bob" not in response.text
+
+
+def test_busqueda_sin_resultados_muestra_mensaje(client_completo):
+    response = client_completo.get("/admin/tabla?q=zzz", auth=ADMIN)
+    assert "Sin resultados" in response.text
+
+
+def test_encabezados_estado_y_reservado_son_clicables(client_completo):
+    response = client_completo.get("/admin/tabla", auth=ADMIN)
+    assert 'hx-get="/admin/tabla?orden=estado' in response.text
+    assert 'hx-get="/admin/tabla?orden=reservado_en' in response.text
+
+
+def test_tabla_tiene_input_busqueda(client_completo):
+    response = client_completo.get("/admin/tabla", auth=ADMIN)
+    assert 'id="admin-buscar"' in response.text

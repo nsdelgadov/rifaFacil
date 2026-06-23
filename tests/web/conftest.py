@@ -29,3 +29,29 @@ def client(tmp_path, monkeypatch):
 
     monkeypatch.setattr(store_module, "_repo", repo)
     return TestClient(app)
+
+
+@pytest.fixture
+def client_completo(tmp_path, monkeypatch):
+    monkeypatch.setenv("ADMIN_USER", "admin")
+    monkeypatch.setenv("ADMIN_PASSWORD", "secret")
+
+    repo = SqliteRifaRepository(str(tmp_path / "test.db"))
+    rifa = Rifa.crear(
+        nombre="Rifa Test",
+        precio_boleto=5_000,
+        cantidad_boletos=10,
+        telefono_admin=Telefono(numero="+56912345678"),
+    )
+    ana = Participante(nombre="Ana", telefono=Telefono(numero="+56987654321"))
+    bob = Participante(nombre="Bob", telefono=Telefono(numero="+56911111111"))
+    carlos = Participante(nombre="Carlos", telefono=Telefono(numero="+56922222222"))
+
+    rifa.reservar_boleto(1, ana, reservado_en=datetime(2026, 1, 15, 10, 30))
+    rifa.reservar_boleto(2, bob, reservado_en=datetime(2026, 3, 1, 9, 0))
+    rifa.reservar_boleto(3, carlos, reservado_en=datetime(2026, 2, 1, 14, 0))
+    rifa.confirmar_pago(3)
+    repo.guardar(rifa)
+
+    monkeypatch.setattr(store_module, "_repo", repo)
+    return TestClient(app)

@@ -48,6 +48,30 @@ templates.env.filters["pesos"] = _pesos
 templates.env.filters["fecha"] = _fecha
 templates.env.globals["version"] = os.getenv("APP_VERSION", "?")
 
+_PRIORIDAD_ESTADO = {"reservado": 0, "pagado": 1}
+
+
+def _filtrar_y_ordenar(boletos: list, orden: str, dir: str, q: str) -> list:
+    resultado = [b for b in boletos if b.estado != "disponible"]
+    if q:
+        q_norm = q.strip().lower()
+        resultado = [
+            b for b in resultado
+            if q_norm in (b.participante.nombre.lower() if b.participante else "")
+            or q.strip() in f"{b.numero.valor:03d}"
+        ]
+    if orden == "estado":
+        resultado.sort(
+            key=lambda b: _PRIORIDAD_ESTADO.get(b.estado.value, 2),
+            reverse=(dir == "desc"),
+        )
+    elif orden == "reservado_en":
+        resultado.sort(
+            key=lambda b: b.reservado_en or datetime.min,
+            reverse=(dir == "desc"),
+        )
+    return resultado
+
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -112,20 +136,42 @@ async def reservar_boleto(
 
 
 @app.get("/admin/tabla", response_class=HTMLResponse)
-async def admin_tabla(request: Request, _: None = Depends(_verificar_admin)):
+async def admin_tabla(
+    request: Request,
+    orden: str = "numero",
+    dir: str = "asc",
+    q: str = "",
+    _: None = Depends(_verificar_admin),
+):
+    rifa = obtener_rifa()
     return templates.TemplateResponse(
         request=request,
         name="admin/partials/tabla_boletos.html",
-        context={"rifa": obtener_rifa(), "refresh_segundos": obtener_refresh_segundos()},
+        context={
+            "rifa": rifa,
+            "boletos_filtrados": _filtrar_y_ordenar(rifa.boletos, orden, dir, q),
+            "refresh_segundos": obtener_refresh_segundos(),
+            "orden": orden,
+            "dir": dir,
+            "q": q,
+        },
     )
 
 
 @app.get("/admin", response_class=HTMLResponse)
 async def panel_admin(request: Request, _: None = Depends(_verificar_admin)):
+    rifa = obtener_rifa()
     return templates.TemplateResponse(
         request=request,
         name="admin/panel.html",
-        context={"rifa": obtener_rifa(), "refresh_segundos": obtener_refresh_segundos()},
+        context={
+            "rifa": rifa,
+            "boletos_filtrados": _filtrar_y_ordenar(rifa.boletos, "numero", "asc", ""),
+            "refresh_segundos": obtener_refresh_segundos(),
+            "orden": "numero",
+            "dir": "asc",
+            "q": "",
+        },
     )
 
 
