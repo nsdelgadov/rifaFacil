@@ -51,3 +51,14 @@ def test_guardar_sobreescribe_estado_previo(tmp_path):
 
     recuperada = SqliteRifaRepository(db_path).obtener()
     assert recuperada.obtener_boleto(2).participante.nombre == "Luis"
+
+
+def test_get_config_retorna_default_si_no_existe(tmp_path):
+    repo = SqliteRifaRepository(str(tmp_path / "test.db"))
+    assert repo.get_config("refresh_segundos", "60") == "60"
+
+
+def test_set_config_persiste_y_get_config_lo_lee(tmp_path):
+    db_path = str(tmp_path / "test.db")
+    SqliteRifaRepository(db_path).set_config("refresh_segundos", "30")
+    assert SqliteRifaRepository(db_path).get_config("refresh_segundos", "60") == "30"

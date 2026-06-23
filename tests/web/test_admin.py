@@ -77,3 +77,9 @@ def test_botones_accion_muestran_texto_cargando(client):
 def test_tabla_muestra_fecha_de_reserva(client):
     response = client.get("/admin/tabla", auth=ADMIN)
     assert "15/01 10:30" in response.text
+
+
+def test_config_refresh_persiste_valor_en_repositorio(client):
+    import rifafacil.web.store as store_module
+    client.post("/admin/config/refresh", data={"segundos": "30"}, auth=ADMIN)
+    assert store_module.obtener_refresh_segundos() == 30

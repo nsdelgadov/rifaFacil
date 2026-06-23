@@ -10,7 +10,7 @@ from fastapi.templating import Jinja2Templates
 
 from rifafacil.domain.participante import Participante
 from rifafacil.domain.telefono import Telefono
-from rifafacil.web.store import guardar_rifa, obtener_rifa
+from rifafacil.web.store import guardar_rifa, guardar_refresh_segundos, obtener_rifa, obtener_refresh_segundos
 
 _security = HTTPBasic()
 
@@ -31,7 +31,6 @@ def _verificar_admin(credentials: HTTPBasicCredentials = Depends(_security)) -> 
         )
 
 app = FastAPI(title="rifaFacil")
-app.state.refresh_segundos = int(os.getenv("GRILLA_REFRESH_SEGUNDOS", "60"))
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
 
@@ -55,7 +54,7 @@ async def index(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"rifa": obtener_rifa(), "refresh_segundos": request.app.state.refresh_segundos},
+        context={"rifa": obtener_rifa(), "refresh_segundos": obtener_refresh_segundos()},
     )
 
 
@@ -64,7 +63,7 @@ async def grilla_boletos(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="partials/grilla.html",
-        context={"rifa": obtener_rifa(), "refresh_segundos": request.app.state.refresh_segundos},
+        context={"rifa": obtener_rifa(), "refresh_segundos": obtener_refresh_segundos()},
     )
 
 
@@ -117,7 +116,7 @@ async def admin_tabla(request: Request, _: None = Depends(_verificar_admin)):
     return templates.TemplateResponse(
         request=request,
         name="admin/partials/tabla_boletos.html",
-        context={"rifa": obtener_rifa(), "refresh_segundos": request.app.state.refresh_segundos},
+        context={"rifa": obtener_rifa(), "refresh_segundos": obtener_refresh_segundos()},
     )
 
 
@@ -126,7 +125,7 @@ async def panel_admin(request: Request, _: None = Depends(_verificar_admin)):
     return templates.TemplateResponse(
         request=request,
         name="admin/panel.html",
-        context={"rifa": obtener_rifa(), "refresh_segundos": request.app.state.refresh_segundos},
+        context={"rifa": obtener_rifa(), "refresh_segundos": obtener_refresh_segundos()},
     )
 
 
@@ -138,7 +137,7 @@ async def admin_config_refresh(
 ):
     if segundos != -1:
         segundos = max(5, segundos)
-    request.app.state.refresh_segundos = segundos
+    guardar_refresh_segundos(segundos)
     return templates.TemplateResponse(
         request=request,
         name="admin/partials/config_refresh.html",

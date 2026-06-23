@@ -22,3 +22,12 @@ def obtener_rifa() -> Rifa:
 
 def guardar_rifa(rifa: Rifa) -> None:
     _repo.guardar(rifa)
+
+
+def obtener_refresh_segundos() -> int:
+    default = os.getenv("GRILLA_REFRESH_SEGUNDOS", "60")
+    return int(_repo.get_config("refresh_segundos", default))
+
+
+def guardar_refresh_segundos(segundos: int) -> None:
+    _repo.set_config("refresh_segundos", str(segundos))
