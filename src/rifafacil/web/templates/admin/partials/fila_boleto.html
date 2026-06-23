@@ -11,19 +11,26 @@
   </td>
   <td class="py-2 px-4">{{ boleto.participante.nombre if boleto.participante else "—" }}</td>
   <td class="py-2 px-4">{{ boleto.participante.telefono.numero if boleto.participante else "—" }}</td>
+  <td class="py-2 px-4 text-gray-500 text-xs">{{ boleto.reservado_en | fecha }}</td>
   <td class="py-2 px-4 space-x-2">
     {% if boleto.estado == 'reservado' %}
-      <button hx-post="/admin/boletos/{{ boleto.numero.valor }}/confirmar"
+      <button id="btn-confirmar-{{ boleto.numero.valor }}"
+              hx-post="/admin/boletos/{{ boleto.numero.valor }}/confirmar"
               hx-target="#fila-{{ boleto.numero.valor }}"
               hx-swap="outerHTML"
-              class="bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700">
-        Confirmar pago
+              hx-disabled-elt="#btn-confirmar-{{ boleto.numero.valor }}, #btn-liberar-{{ boleto.numero.valor }}"
+              class="group bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed">
+        <span class="group-[.htmx-request]:hidden">Confirmar pago</span>
+        <span class="hidden group-[.htmx-request]:inline">Cargando…</span>
       </button>
-      <button hx-post="/admin/boletos/{{ boleto.numero.valor }}/liberar"
+      <button id="btn-liberar-{{ boleto.numero.valor }}"
+              hx-post="/admin/boletos/{{ boleto.numero.valor }}/liberar"
               hx-target="#fila-{{ boleto.numero.valor }}"
               hx-swap="outerHTML"
-              class="bg-red-100 text-red-700 text-sm px-3 py-1 rounded hover:bg-red-200">
-        Liberar
+              hx-disabled-elt="#btn-confirmar-{{ boleto.numero.valor }}, #btn-liberar-{{ boleto.numero.valor }}"
+              class="group bg-red-100 text-red-700 text-sm px-3 py-1 rounded hover:bg-red-200 disabled:opacity-60 disabled:cursor-not-allowed">
+        <span class="group-[.htmx-request]:hidden">Liberar</span>
+        <span class="hidden group-[.htmx-request]:inline">Cargando…</span>
       </button>
     {% endif %}
   </td>

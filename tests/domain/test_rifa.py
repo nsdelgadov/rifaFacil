@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from rifafacil.domain.estado_boleto import EstadoBoleto
@@ -130,3 +132,11 @@ def test_boleto_inexistente_lanza_error():
 
     with pytest.raises(ValueError):
         rifa.reservar_boleto(numero=99, participante=_participante())
+
+
+def test_reservar_boleto_guarda_fecha():
+    rifa = _crear_rifa()
+    ahora = datetime(2026, 6, 22, 14, 30)
+    rifa.reservar_boleto(numero=1, participante=_participante(), reservado_en=ahora)
+
+    assert rifa.obtener_boleto(1).reservado_en == ahora

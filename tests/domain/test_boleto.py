@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from rifafacil.domain.boleto import Boleto
@@ -93,3 +95,21 @@ def test_boleto_pagado_no_puede_liberarse():
 
     with pytest.raises(ValueError, match="liberarse"):
         b.liberar()
+
+
+# ── Fecha de reserva ───────────────────────────────────────────────────────
+
+def test_reservar_guarda_fecha():
+    b = _boleto()
+    ahora = datetime(2026, 6, 22, 14, 30)
+    b.reservar(_participante(), reservado_en=ahora)
+
+    assert b.reservado_en == ahora
+
+
+def test_liberar_borra_fecha_de_reserva():
+    b = _boleto()
+    b.reservar(_participante(), reservado_en=datetime(2026, 6, 22, 14, 30))
+    b.liberar()
+
+    assert b.reservado_en is None

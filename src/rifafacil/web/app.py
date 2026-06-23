@@ -1,5 +1,6 @@
 import os
 import secrets
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
@@ -9,7 +10,7 @@ from fastapi.templating import Jinja2Templates
 
 from rifafacil.domain.participante import Participante
 from rifafacil.domain.telefono import Telefono
-from rifafacil.web.store import guardar_rifa, obtener_rifa
+from rifafacil.web.store import guardar_rifa, guardar_refresh_segundos, obtener_rifa, obtener_refresh_segundos
 
 _security = HTTPBasic()
 
@@ -30,7 +31,6 @@ def _verificar_admin(credentials: HTTPBasicCredentials = Depends(_security)) -> 
         )
 
 app = FastAPI(title="rifaFacil")
-app.state.refresh_segundos = int(os.getenv("GRILLA_REFRESH_SEGUNDOS", "60"))
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
 
@@ -38,8 +38,39 @@ def _pesos(valor: int) -> str:
     return f"${valor:,}".replace(",", ".")
 
 
+def _fecha(dt: datetime | None) -> str:
+    if dt is None:
+        return "—"
+    return dt.strftime("%d/%m %H:%M")
+
+
 templates.env.filters["pesos"] = _pesos
+templates.env.filters["fecha"] = _fecha
 templates.env.globals["version"] = os.getenv("APP_VERSION", "?")
+
+_PRIORIDAD_ESTADO = {"reservado": 0, "pagado": 1}
+
+
+def _filtrar_y_ordenar(boletos: list, orden: str, dir: str, q: str) -> list:
+    resultado = [b for b in boletos if b.estado != "disponible"]
+    if q:
+        q_norm = q.strip().lower()
+        resultado = [
+            b for b in resultado
+            if q_norm in (b.participante.nombre.lower() if b.participante else "")
+            or q.strip() in f"{b.numero.valor:03d}"
+        ]
+    if orden == "estado":
+        resultado.sort(
+            key=lambda b: _PRIORIDAD_ESTADO.get(b.estado.value, 2),
+            reverse=(dir == "desc"),
+        )
+    elif orden == "reservado_en":
+        resultado.sort(
+            key=lambda b: b.reservado_en or datetime.min,
+            reverse=(dir == "desc"),
+        )
+    return resultado
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -47,7 +78,7 @@ async def index(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"rifa": obtener_rifa(), "refresh_segundos": request.app.state.refresh_segundos},
+        context={"rifa": obtener_rifa(), "refresh_segundos": obtener_refresh_segundos()},
     )
 
 
@@ -56,7 +87,7 @@ async def grilla_boletos(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="partials/grilla.html",
-        context={"rifa": obtener_rifa(), "refresh_segundos": request.app.state.refresh_segundos},
+        context={"rifa": obtener_rifa(), "refresh_segundos": obtener_refresh_segundos()},
     )
 
 
@@ -80,7 +111,7 @@ async def reservar_boleto(
     rifa = obtener_rifa()
     try:
         participante = Participante(nombre=nombre, telefono=Telefono(numero=telefono))
-        rifa.reservar_boleto(numero=numero, participante=participante)
+        rifa.reservar_boleto(numero=numero, participante=participante, reservado_en=datetime.now())
         guardar_rifa(rifa)
     except ValueError as e:
         return templates.TemplateResponse(
@@ -104,12 +135,43 @@ async def reservar_boleto(
     )
 
 
+@app.get("/admin/tabla", response_class=HTMLResponse)
+async def admin_tabla(
+    request: Request,
+    orden: str = "numero",
+    dir: str = "asc",
+    q: str = "",
+    _: None = Depends(_verificar_admin),
+):
+    rifa = obtener_rifa()
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/partials/tabla_boletos.html",
+        context={
+            "rifa": rifa,
+            "boletos_filtrados": _filtrar_y_ordenar(rifa.boletos, orden, dir, q),
+            "refresh_segundos": obtener_refresh_segundos(),
+            "orden": orden,
+            "dir": dir,
+            "q": q,
+        },
+    )
+
+
 @app.get("/admin", response_class=HTMLResponse)
 async def panel_admin(request: Request, _: None = Depends(_verificar_admin)):
+    rifa = obtener_rifa()
     return templates.TemplateResponse(
         request=request,
         name="admin/panel.html",
-        context={"rifa": obtener_rifa(), "refresh_segundos": request.app.state.refresh_segundos},
+        context={
+            "rifa": rifa,
+            "boletos_filtrados": _filtrar_y_ordenar(rifa.boletos, "numero", "asc", ""),
+            "refresh_segundos": obtener_refresh_segundos(),
+            "orden": "numero",
+            "dir": "asc",
+            "q": "",
+        },
     )
 
 
@@ -121,7 +183,7 @@ async def admin_config_refresh(
 ):
     if segundos != -1:
         segundos = max(5, segundos)
-    request.app.state.refresh_segundos = segundos
+    guardar_refresh_segundos(segundos)
     return templates.TemplateResponse(
         request=request,
         name="admin/partials/config_refresh.html",

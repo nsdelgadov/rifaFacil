@@ -143,14 +143,26 @@ El admin confirma pagos y libera reservas desde `/admin`. HTMX actualiza solo la
 
 **Concepto**: infraestructura como código. EC2 t3.micro con volumen EBS montado en `/data/rifafacil/` — SQLite persiste entre reinicios. `setup_server.sh` reproduce el servidor desde cero. GitHub Actions despliega automáticamente en cada push a `main` via SSH. Variables sensibles viven en `/etc/rifafacil.env` directo en el servidor, nunca en el repo.
 
+### Ciclos 14+15 — HTTPS y UX del panel de administrador ✅
+
+**Ciclo 14**: dominio propio con Namecheap apuntando a la IP de EC2 + certificado real via certbot + nginx como reverse proxy. Versión de la app inyectada como `APP_VERSION` en el deploy.
+
+**Ciclo 15**: seis mejoras al panel `/admin`:
+- Auto-refresh de la tabla al mismo ritmo que la grilla pública (nuevo endpoint `GET /admin/tabla`)
+- Botones "Confirmar pago" y "Liberar" muestran "Cargando…" y se deshabilitan mutuamente durante el request
+- Columna con fecha y hora de reserva para decidir si liberar boletos viejos
+- Intervalo de refresh persiste en SQLite — sobrevive reinicios del servidor
+- Orden por Estado (reservado → pagado) o por fecha de reserva (asc/desc)
+- Buscador por nombre de participante o número de boleto (`003`)
+
 ---
 
 ## Próximos ciclos
 
 | Ciclo | Qué construimos | Concepto / Motivo |
 |-------|----------------|-------------------|
-| **14** | HTTPS con DuckDNS + Let's Encrypt | Subdominio gratuito + certificado real via certbot + nginx. Necesario para mostrar a clientes sin alerta de "no seguro" |
-| **15** | UX del panel de administrador | Mejorar la experiencia del admin: diseño, flujos y usabilidad del panel |
+| **14** | HTTPS con Namecheap + Let's Encrypt ✅ | Dominio propio en Namecheap apuntando a EC2 + certificado real via certbot + nginx. Necesario para mostrar a clientes sin alerta de "no seguro" |
+| **15** | UX del panel de administrador ✅ | Auto-refresh, estado cargando en botones, fecha de reserva, persistencia de refresh, ordenar por estado/fecha, buscador por nombre o número |
 | **16** | Confianza y transparencia | Link a campaña (Instagram/Facebook), imágenes de la causa, datos de cuenta bancaria para donaciones directas |
 | **17** | Selección múltiple de boletos | Elegir entre 1 y 10 boletos a la vez — flujo para quienes quieren aportar más |
 | **18** | Múltiples rifas — un solo admin | Soporte para más de una rifa activa en el mismo servidor, todas gestionadas por el mismo administrador |

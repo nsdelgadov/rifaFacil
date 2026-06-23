@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from rifafacil.domain.boleto import Boleto
@@ -54,8 +56,8 @@ class Rifa(BaseModel):
                 return b
         raise ValueError(f"El boleto N°{numero} no existe en esta rifa")
 
-    def reservar_boleto(self, numero: int, participante: Participante) -> None:
-        self.obtener_boleto(numero).reservar(participante)
+    def reservar_boleto(self, numero: int, participante: Participante, reservado_en: datetime | None = None) -> None:
+        self.obtener_boleto(numero).reservar(participante, reservado_en)
 
     def confirmar_pago(self, numero: int) -> None:
         self.obtener_boleto(numero).confirmar_pago()
