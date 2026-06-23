@@ -72,3 +72,8 @@ def test_botones_accion_deshabilitan_ambos_botones(client):
 def test_botones_accion_muestran_texto_cargando(client):
     response = client.get("/admin/tabla", auth=ADMIN)
     assert "Cargando" in response.text
+
+
+def test_tabla_muestra_fecha_de_reserva(client):
+    response = client.get("/admin/tabla", auth=ADMIN)
+    assert "15/01 10:30" in response.text

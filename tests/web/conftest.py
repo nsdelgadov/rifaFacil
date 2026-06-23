@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -22,7 +24,7 @@ def client(tmp_path, monkeypatch):
         telefono_admin=Telefono(numero="+56912345678"),
     )
     participante = Participante(nombre="Ana", telefono=Telefono(numero="+56987654321"))
-    rifa.reservar_boleto(1, participante)
+    rifa.reservar_boleto(1, participante, reservado_en=datetime(2026, 1, 15, 10, 30))
     repo.guardar(rifa)
 
     monkeypatch.setattr(store_module, "_repo", repo)

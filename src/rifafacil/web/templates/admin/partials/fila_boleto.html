@@ -11,6 +11,7 @@
   </td>
   <td class="py-2 px-4">{{ boleto.participante.nombre if boleto.participante else "—" }}</td>
   <td class="py-2 px-4">{{ boleto.participante.telefono.numero if boleto.participante else "—" }}</td>
+  <td class="py-2 px-4 text-gray-500 text-xs">{{ boleto.reservado_en | fecha }}</td>
   <td class="py-2 px-4 space-x-2">
     {% if boleto.estado == 'reservado' %}
       <button id="btn-confirmar-{{ boleto.numero.valor }}"

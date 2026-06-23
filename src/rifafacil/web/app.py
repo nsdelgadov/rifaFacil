@@ -1,5 +1,6 @@
 import os
 import secrets
+from datetime import datetime
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
@@ -38,7 +39,14 @@ def _pesos(valor: int) -> str:
     return f"${valor:,}".replace(",", ".")
 
 
+def _fecha(dt: datetime | None) -> str:
+    if dt is None:
+        return "—"
+    return dt.strftime("%d/%m %H:%M")
+
+
 templates.env.filters["pesos"] = _pesos
+templates.env.filters["fecha"] = _fecha
 templates.env.globals["version"] = os.getenv("APP_VERSION", "?")
 
 
@@ -80,7 +88,7 @@ async def reservar_boleto(
     rifa = obtener_rifa()
     try:
         participante = Participante(nombre=nombre, telefono=Telefono(numero=telefono))
-        rifa.reservar_boleto(numero=numero, participante=participante)
+        rifa.reservar_boleto(numero=numero, participante=participante, reservado_en=datetime.now())
         guardar_rifa(rifa)
     except ValueError as e:
         return templates.TemplateResponse(
