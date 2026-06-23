@@ -60,3 +60,15 @@ def test_admin_tabla_incluye_polling_htmx(client):
     response = client.get("/admin/tabla", auth=ADMIN)
     assert 'hx-get="/admin/tabla"' in response.text
     assert "hx-trigger" in response.text
+
+
+def test_botones_accion_deshabilitan_ambos_botones(client):
+    response = client.get("/admin/tabla", auth=ADMIN)
+    assert "btn-confirmar-1" in response.text
+    assert "btn-liberar-1" in response.text
+    assert response.text.count('hx-disabled-elt="#btn-confirmar-1, #btn-liberar-1"') == 2
+
+
+def test_botones_accion_muestran_texto_cargando(client):
+    response = client.get("/admin/tabla", auth=ADMIN)
+    assert "Cargando" in response.text
