@@ -39,3 +39,24 @@ def test_confirmar_sin_credenciales_retorna_401(client):
 def test_liberar_sin_credenciales_retorna_401(client):
     response = client.post("/admin/boletos/1/liberar")
     assert response.status_code == 401
+
+
+def test_admin_tabla_sin_credenciales_retorna_401(client):
+    response = client.get("/admin/tabla")
+    assert response.status_code == 401
+
+
+def test_admin_tabla_con_credenciales_retorna_200(client):
+    response = client.get("/admin/tabla", auth=ADMIN)
+    assert response.status_code == 200
+
+
+def test_admin_tabla_muestra_boletos_ocupados(client):
+    response = client.get("/admin/tabla", auth=ADMIN)
+    assert "reservado" in response.text.lower()
+
+
+def test_admin_tabla_incluye_polling_htmx(client):
+    response = client.get("/admin/tabla", auth=ADMIN)
+    assert 'hx-get="/admin/tabla"' in response.text
+    assert "hx-trigger" in response.text

@@ -1,0 +1,37 @@
+<div id="admin-tabla"
+     {% if refresh_segundos != -1 %}
+     hx-get="/admin/tabla"
+     hx-trigger="every {{ refresh_segundos }}s"
+     hx-swap="outerHTML"
+     {% endif %}>
+  <div class="bg-white rounded-xl shadow overflow-hidden">
+    <table class="w-full text-sm text-left">
+      <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+        <tr>
+          <th class="py-3 px-4">N°</th>
+          <th class="py-3 px-4">Estado</th>
+          <th class="py-3 px-4">Nombre</th>
+          <th class="py-3 px-4">Teléfono</th>
+          <th class="py-3 px-4">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for boleto in rifa.boletos %}
+          {% if boleto.estado != 'disponible' %}
+            {% include "admin/partials/fila_boleto.html" %}
+          {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% set ocupados = rifa.boletos | selectattr("estado", "ne", "disponible") | list %}
+    {% if not ocupados %}
+      <p class="text-center text-gray-400 py-8">No hay boletos reservados ni pagados aún.</p>
+    {% endif %}
+  </div>
+
+  <p class="text-xs text-gray-400 mt-4 text-right">
+    {{ rifa.boletos | selectattr("estado", "equalto", "reservado") | list | length }} reservados ·
+    {{ rifa.boletos | selectattr("estado", "equalto", "pagado") | list | length }} pagados
+  </p>
+</div>

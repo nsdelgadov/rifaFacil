@@ -104,6 +104,15 @@ async def reservar_boleto(
     )
 
 
+@app.get("/admin/tabla", response_class=HTMLResponse)
+async def admin_tabla(request: Request, _: None = Depends(_verificar_admin)):
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/partials/tabla_boletos.html",
+        context={"rifa": obtener_rifa(), "refresh_segundos": request.app.state.refresh_segundos},
+    )
+
+
 @app.get("/admin", response_class=HTMLResponse)
 async def panel_admin(request: Request, _: None = Depends(_verificar_admin)):
     return templates.TemplateResponse(
