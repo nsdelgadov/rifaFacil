@@ -7,7 +7,17 @@
 
   <div class="sticky top-0 z-20 bg-gray-50 pb-4">
   <h1 class="text-3xl font-bold text-center text-gray-800 mb-1">{{ rifa.nombre }}</h1>
-  <p class="text-center text-gray-500 mb-6">Boleto: {{ rifa.precio_boleto | pesos }}</p>
+  <p class="text-center text-gray-500 mb-1">Boleto: {{ rifa.precio_boleto | pesos }}</p>
+  {% if campaign_link %}
+  <p class="text-center mb-5">
+    <a href="{{ campaign_link }}" target="_blank" rel="noopener"
+       class="text-sm text-blue-600 hover:underline font-medium">
+      Ver campaña →
+    </a>
+  </p>
+  {% else %}
+  <div class="mb-6"></div>
+  {% endif %}
 
   <div class="flex justify-center gap-6 text-sm text-gray-500">
     <span class="flex items-center gap-1.5">
