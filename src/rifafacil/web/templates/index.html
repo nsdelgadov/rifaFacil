@@ -33,4 +33,77 @@
   </p>
   <p class="text-center text-xs text-gray-300 mt-2">v{{ version }}</p>
 </div>
+
+{% if imagenes %}
+{% set principal = imagen_principal(imagenes) %}
+
+<!-- Imagen esquina inferior derecha -->
+<button
+  onclick="document.getElementById('carousel-modal').showModal()"
+  class="fixed bottom-5 right-5 z-30 w-16 h-16 rounded-full shadow-xl ring-4 ring-white overflow-hidden hover:scale-105 transition-transform"
+  title="Ver campaña">
+  <img src="/uploads/{{ principal.filename }}" alt="Campaña" class="w-full h-full object-cover">
+</button>
+
+<!-- Modal carrusel -->
+<dialog id="carousel-modal"
+  class="rounded-2xl shadow-2xl p-0 w-full max-w-sm backdrop:bg-black/60 border-0 outline-none"
+  onclick="if(event.target===this)this.close()">
+  <div class="relative bg-white rounded-2xl overflow-hidden">
+
+    <!-- Botón cerrar -->
+    <button onclick="document.getElementById('carousel-modal').close()"
+      class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/40 text-white text-lg leading-none hover:bg-black/60">
+      ×
+    </button>
+
+    <!-- Slides -->
+    <div id="rf-slides" class="relative">
+      {% for img in imagenes %}
+      <div class="rf-slide {% if not loop.first %}hidden{% endif %}">
+        <img src="/uploads/{{ img.filename }}"
+             alt="Imagen {{ loop.index }}"
+             class="w-full max-h-72 object-contain bg-gray-50">
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Navegación (solo si hay más de 1) -->
+    {% if imagenes|length > 1 %}
+    <div class="flex items-center justify-between px-4 py-2 bg-gray-50">
+      <button onclick="rfPrev()" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-lg">‹</button>
+      <span id="rf-counter" class="text-sm text-gray-500">1 / {{ imagenes|length }}</span>
+      <button onclick="rfNext()" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-lg">›</button>
+    </div>
+    {% endif %}
+
+    <!-- Link campaña -->
+    {% if campaign_link %}
+    <div class="px-4 py-3 border-t border-gray-100 text-center">
+      <a href="{{ campaign_link }}" target="_blank" rel="noopener"
+         class="text-sm text-blue-600 hover:underline font-medium">
+        Ver campaña →
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</dialog>
+
+<script>
+  (function () {
+    var i = 0;
+    var slides = document.querySelectorAll('.rf-slide');
+    var counter = document.getElementById('rf-counter');
+    function show(n) {
+      slides.forEach(function (s, idx) { s.classList.toggle('hidden', idx !== n); });
+      if (counter) counter.textContent = (n + 1) + ' / ' + slides.length;
+    }
+    window.rfNext = function () { i = (i + 1) % slides.length; show(i); };
+    window.rfPrev = function () { i = (i - 1 + slides.length) % slides.length; show(i); };
+    document.getElementById('carousel-modal').addEventListener('close', function () { i = 0; show(0); });
+  })();
+</script>
+{% endif %}
+
 {% endblock %}
