@@ -1,0 +1,48 @@
+<div id="galeria-imagenes" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 mt-3">
+  {% for img in imagenes %}
+  <div class="relative group">
+    <img src="/uploads/{{ img.filename }}" alt="Imagen {{ loop.index }}"
+         class="w-full h-20 object-cover rounded-lg border-2 {% if img.principal %}border-yellow-400{% else %}border-gray-200{% endif %}">
+
+    {% if img.principal %}
+    <span class="absolute top-1 left-1 text-xs bg-yellow-400 text-yellow-900 px-1 rounded font-bold">★</span>
+    {% endif %}
+
+    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition rounded-lg flex flex-col items-center justify-center gap-1">
+      {% if not img.principal %}
+      <button
+        hx-post="/admin/imagenes/{{ img.filename }}/principal"
+        hx-target="#galeria-imagenes"
+        hx-swap="outerHTML"
+        class="text-xs bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded font-semibold hover:bg-yellow-300">
+        Principal
+      </button>
+      {% endif %}
+      <button
+        hx-delete="/admin/imagenes/{{ img.filename }}"
+        hx-target="#galeria-imagenes"
+        hx-swap="outerHTML"
+        hx-confirm="¿Eliminar esta imagen?"
+        class="text-xs bg-red-500 text-white px-2 py-0.5 rounded hover:bg-red-600">
+        Eliminar
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% if imagenes|length < 10 %}
+  <label class="flex flex-col items-center justify-center h-20 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 text-gray-400 text-sm">
+    <span class="text-2xl leading-none upload-icon">+</span>
+    <span class="text-xs upload-icon">Subir</span>
+    <span class="text-xs hidden upload-loading">Subiendo…</span>
+    <input type="file" accept="image/*" class="hidden"
+           hx-post="/admin/imagenes/subir"
+           hx-encoding="multipart/form-data"
+           hx-target="#galeria-imagenes"
+           hx-swap="outerHTML"
+           hx-trigger="change"
+           hx-on:htmx:before-request="var l=this.closest('label');l.classList.add('pointer-events-none');l.querySelectorAll('.upload-icon').forEach(e=>e.classList.add('hidden'));l.querySelector('.upload-loading').classList.remove('hidden')"
+           name="file">
+  </label>
+  {% endif %}
+</div>

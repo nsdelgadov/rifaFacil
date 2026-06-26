@@ -3,23 +3,49 @@
 {% block title %}{{ rifa.nombre }}{% endblock %}
 
 {% block content %}
+{% if imagenes %}{% set principal = imagen_principal(imagenes) %}{% endif %}
+
 <div class="max-w-3xl mx-auto py-10 px-4">
 
-  <div class="sticky top-0 z-20 bg-gray-50 pb-4">
-  <h1 class="text-3xl font-bold text-center text-gray-800 mb-1">{{ rifa.nombre }}</h1>
-  <p class="text-center text-gray-500 mb-6">Boleto: {{ rifa.precio_boleto | pesos }}</p>
+  <div class="sticky top-0 z-20 bg-gray-50 pb-4 pt-1">
+    <div class="flex gap-4 items-stretch">
 
-  <div class="flex justify-center gap-6 text-sm text-gray-500">
-    <span class="flex items-center gap-1.5">
-      <span class="w-4 h-4 rounded border-2 border-green-500 bg-green-50 inline-block"></span> Disponible
-    </span>
-    <span class="flex items-center gap-1.5">
-      <span class="w-4 h-4 rounded border-2 border-blue-500 bg-blue-50 inline-block"></span> Reservado
-    </span>
-    <span class="flex items-center gap-1.5">
-      <span class="w-4 h-4 rounded border-2 border-red-400 bg-red-100 inline-block"></span> <span class="line-through">Pagado</span>
-    </span>
-  </div>
+      {% if imagenes %}
+      <!-- Imagen: hermana del bloque de texto, misma altura -->
+      <button
+        onclick="document.getElementById('carousel-modal').showModal()"
+        class="w-28 flex-shrink-0 rounded-xl overflow-hidden shadow-md ring-2 ring-white hover:scale-105 transition-transform"
+        title="Ver fotos">
+        <img src="/uploads/{{ principal.filename }}" alt="Campaña" class="w-full h-full object-cover">
+      </button>
+      {% endif %}
+
+      <!-- Texto -->
+      <div class="flex-1 flex flex-col justify-center {% if not imagenes %}items-center text-center{% endif %}">
+        <h1 class="text-2xl font-bold text-gray-800 mb-0.5">{{ rifa.nombre }}</h1>
+        <p class="text-gray-500 text-sm mb-1">Boleto: {{ rifa.precio_boleto | pesos }}</p>
+        {% if campaign_link %}
+        <p>
+          <a href="{{ campaign_link }}" target="_blank" rel="noopener"
+             class="text-sm text-blue-600 hover:underline font-medium">
+            Ver campaña →
+          </a>
+        </p>
+        {% endif %}
+      </div>
+      <div class="flex flex-col justify-center gap-6 text-sm text-gray-500 mt-3">
+        <span class="flex items-center gap-1.5">
+          <span class="w-4 h-4 rounded border-2 border-green-500 bg-green-50 inline-block"></span> Disponible
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-4 h-4 rounded border-2 border-blue-500 bg-blue-50 inline-block"></span> Reservado
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-4 h-4 rounded border-2 border-red-400 bg-red-100 inline-block"></span> <span class="line-through">Pagado</span>
+        </span>
+      </div>
+    </div>
+
   </div>
 
   {% include "partials/grilla.html" %}
@@ -33,4 +59,67 @@
   </p>
   <p class="text-center text-xs text-gray-300 mt-2">v{{ version }}</p>
 </div>
+
+{% if imagenes %}
+<!-- Modal carrusel -->
+<dialog id="carousel-modal"
+  class="rounded-2xl shadow-2xl p-0 w-[90vw] max-w-[90vw] max-h-[90vh] backdrop:bg-black/60 border-0 outline-none"
+  onclick="if(event.target===this)this.close()">
+  <div class="relative bg-white rounded-2xl overflow-hidden flex flex-col" style="max-height:90vh">
+
+    <!-- Botón cerrar -->
+    <button onclick="document.getElementById('carousel-modal').close()"
+      class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/40 text-white text-lg leading-none hover:bg-black/60">
+      ×
+    </button>
+
+    <!-- Slides -->
+    <div id="rf-slides" class="flex-1 min-h-0">
+      {% for img in imagenes %}
+      <div class="rf-slide {% if not loop.first %}hidden{% endif %} flex items-center justify-center bg-gray-50" style="min-height:0">
+        <img src="/uploads/{{ img.filename }}"
+             alt="Imagen {{ loop.index }}"
+             class="w-full object-contain" style="max-height:calc(90vh - 7rem)">
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Navegación (solo si hay más de 1) -->
+    {% if imagenes|length > 1 %}
+    <div class="flex items-center justify-between px-4 py-2 bg-gray-50 border-t border-gray-100 flex-shrink-0">
+      <button onclick="rfPrev()" class="w-9 h-9 rounded-full bg-gray-200 hover:bg-gray-300 text-xl">‹</button>
+      <span id="rf-counter" class="text-sm text-gray-500">1 / {{ imagenes|length }}</span>
+      <button onclick="rfNext()" class="w-9 h-9 rounded-full bg-gray-200 hover:bg-gray-300 text-xl">›</button>
+    </div>
+    {% endif %}
+
+    <!-- Link campaña -->
+    {% if campaign_link %}
+    <div class="px-4 py-3 border-t border-gray-100 text-center flex-shrink-0">
+      <a href="{{ campaign_link }}" target="_blank" rel="noopener"
+         class="text-sm text-blue-600 hover:underline font-medium">
+        Ver campaña →
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</dialog>
+
+<script>
+  (function () {
+    var i = 0;
+    var slides = document.querySelectorAll('.rf-slide');
+    var counter = document.getElementById('rf-counter');
+    function show(n) {
+      slides.forEach(function (s, idx) { s.classList.toggle('hidden', idx !== n); });
+      if (counter) counter.textContent = (n + 1) + ' / ' + slides.length;
+    }
+    window.rfNext = function () { i = (i + 1) % slides.length; show(i); };
+    window.rfPrev = function () { i = (i - 1 + slides.length) % slides.length; show(i); };
+    document.getElementById('carousel-modal').addEventListener('close', function () { i = 0; show(0); });
+  })();
+</script>
+{% endif %}
+
 {% endblock %}
