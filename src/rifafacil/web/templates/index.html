@@ -7,44 +7,45 @@
 
 <div class="max-w-3xl mx-auto py-10 px-4">
 
-  <div class="sticky top-0 z-20 bg-gray-50 pb-4">
+  <div class="sticky top-0 z-20 bg-gray-50 pb-4 pt-1">
+    <div class="flex gap-4 items-stretch">
 
-    <!-- Título + thumbnail al lado -->
-    <div class="flex items-center justify-center gap-3 mb-1">
-      <h1 class="text-3xl font-bold text-gray-800">{{ rifa.nombre }}</h1>
       {% if imagenes %}
+      <!-- Imagen: hermana del bloque de texto, misma altura -->
       <button
         onclick="document.getElementById('carousel-modal').showModal()"
-        class="w-12 h-12 rounded-xl overflow-hidden shadow-md ring-2 ring-white hover:scale-105 transition-transform flex-shrink-0"
+        class="w-28 flex-shrink-0 rounded-xl overflow-hidden shadow-md ring-2 ring-white hover:scale-105 transition-transform"
         title="Ver fotos">
         <img src="/uploads/{{ principal.filename }}" alt="Campaña" class="w-full h-full object-cover">
       </button>
       {% endif %}
+
+      <!-- Texto -->
+      <div class="flex-1 flex flex-col justify-center {% if not imagenes %}items-center text-center{% endif %}">
+        <h1 class="text-2xl font-bold text-gray-800 mb-0.5">{{ rifa.nombre }}</h1>
+        <p class="text-gray-500 text-sm mb-1">Boleto: {{ rifa.precio_boleto | pesos }}</p>
+        {% if campaign_link %}
+        <p>
+          <a href="{{ campaign_link }}" target="_blank" rel="noopener"
+             class="text-sm text-blue-600 hover:underline font-medium">
+            Ver campaña →
+          </a>
+        </p>
+        {% endif %}
+      </div>
+      <div class="flex flex-col justify-center gap-6 text-sm text-gray-500 mt-3">
+        <span class="flex items-center gap-1.5">
+          <span class="w-4 h-4 rounded border-2 border-green-500 bg-green-50 inline-block"></span> Disponible
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-4 h-4 rounded border-2 border-blue-500 bg-blue-50 inline-block"></span> Reservado
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-4 h-4 rounded border-2 border-red-400 bg-red-100 inline-block"></span> <span class="line-through">Pagado</span>
+        </span>
+      </div>
     </div>
 
-    <p class="text-center text-gray-500 mb-1">Boleto: {{ rifa.precio_boleto | pesos }}</p>
-    {% if campaign_link %}
-    <p class="text-center mb-5">
-      <a href="{{ campaign_link }}" target="_blank" rel="noopener"
-         class="text-sm text-blue-600 hover:underline font-medium">
-        Ver campaña →
-      </a>
-    </p>
-    {% else %}
-    <div class="mb-6"></div>
-    {% endif %}
-
-    <div class="flex justify-center gap-6 text-sm text-gray-500">
-      <span class="flex items-center gap-1.5">
-        <span class="w-4 h-4 rounded border-2 border-green-500 bg-green-50 inline-block"></span> Disponible
-      </span>
-      <span class="flex items-center gap-1.5">
-        <span class="w-4 h-4 rounded border-2 border-blue-500 bg-blue-50 inline-block"></span> Reservado
-      </span>
-      <span class="flex items-center gap-1.5">
-        <span class="w-4 h-4 rounded border-2 border-red-400 bg-red-100 inline-block"></span> <span class="line-through">Pagado</span>
-      </span>
-    </div>
   </div>
 
   {% include "partials/grilla.html" %}
