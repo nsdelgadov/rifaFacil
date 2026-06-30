@@ -260,7 +260,8 @@ Agregar dos registros A apuntando ambos subdominios a la misma IP del EC2:
 
 | Ciclo | Qué construimos | Concepto / Motivo |
 |-------|----------------|-------------------|
-| **18** | Datos de la rifa y fecha de sorteo | Agregar fecha de sorteo visible al público. Si no se venden todos los boletos antes de la fecha, el admin puede postergar con una nueva fecha y un mensaje público explicando el motivo — transparencia ante los compradores |
-| **19** | Cierre de rifa y ganadores | El admin declara el sorteo realizado eligiendo los boletos ganadores. La página pública muestra el estado final: ganadores con nombre y número de boleto ganador, sin teléfonos. La rifa queda en modo cerrado (no se aceptan nuevas reservas) pero sigue siendo visible |
-| **20** | Múltiples rifas — admin por rifa | Cada rifa tiene su propio administrador con credenciales independientes |
-| **21** | Migración a PostgreSQL + JSONB | Reemplazar SQLite por PostgreSQL en AWS RDS — misma flexibilidad de esquema mientras el dominio evoluciona, sin cambiar el dominio (solo la capa de infraestructura) |
+| **18** | Seguridad | Auditoría y endurecimiento antes de exponer la app a más usuarios |
+| **19** | Datos de la rifa y fecha de sorteo | Agregar fecha de sorteo visible al público. Si no se venden todos los boletos antes de la fecha, el admin puede postergar con una nueva fecha y un mensaje público explicando el motivo — transparencia ante los compradores |
+| **20** | Cierre de rifa y ganadores | El admin declara el sorteo realizado eligiendo los boletos ganadores. La página pública muestra el estado final: ganadores con nombre y número de boleto ganador, sin teléfonos. La rifa queda en modo cerrado (no se aceptan nuevas reservas) pero sigue siendo visible |
+| **21** | Múltiples rifas — admin por rifa | Cada rifa tiene su propio administrador con credenciales independientes |
+| **22** | Migración a PostgreSQL + JSONB | Reemplazar SQLite por PostgreSQL en AWS RDS — misma flexibilidad de esquema mientras el dominio evoluciona, sin cambiar el dominio (solo la capa de infraestructura) |
