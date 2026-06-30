@@ -189,6 +189,73 @@ El admin confirma pagos y libera reservas desde `/admin`. HTMX actualiza solo la
 
 ---
 
+## Dos rifas en paralelo (configuración, sin código nuevo)
+
+El código ya soporta correr múltiples rifas en el mismo servidor EC2 usando `RIFA_DB_PATH`. No se necesita cambiar nada — solo configuración de nginx y systemd.
+
+### Arquitectura
+
+```
+rifa1.tudominio.cl ─┐
+                    ├─ nginx ─┬─ localhost:8001  (RIFA_DB_PATH=/data/rifafacil/rifa1.db)
+rifa2.tudominio.cl ─┘         └─ localhost:8002  (RIFA_DB_PATH=/data/rifafacil/rifa2.db)
+```
+
+### 1. Dos servicios systemd
+
+Copiar `/etc/systemd/system/rifafacil.service` como `rifafacil-rifa1.service` y `rifafacil-rifa2.service`. La única diferencia entre ambos es el puerto y la base de datos:
+
+```ini
+# rifafacil-rifa1.service
+[Service]
+EnvironmentFile=/etc/rifafacil-rifa1.env
+ExecStart=/ruta/al/venv/bin/uvicorn rifafacil.web.app:app --host 127.0.0.1 --port 8001
+
+# rifafacil-rifa2.service
+[Service]
+EnvironmentFile=/etc/rifafacil-rifa2.env
+ExecStart=/ruta/al/venv/bin/uvicorn rifafacil.web.app:app --host 127.0.0.1 --port 8002
+```
+
+Cada archivo `.env` tiene sus propias variables (`RIFA_NOMBRE`, `RIFA_PRECIO_BOLETO`, `RIFA_DB_PATH`, `ADMIN_PASSWORD`, etc.).
+
+```bash
+sudo systemctl enable --now rifafacil-rifa1 rifafacil-rifa2
+```
+
+### 2. Dos bloques nginx
+
+```nginx
+server {
+    server_name rifa1.tudominio.cl;
+    location / { proxy_pass http://127.0.0.1:8001; }
+}
+
+server {
+    server_name rifa2.tudominio.cl;
+    location / { proxy_pass http://127.0.0.1:8002; }
+}
+```
+
+### 3. Certificados
+
+```bash
+sudo certbot --nginx -d rifa1.tudominio.cl -d rifa2.tudominio.cl
+```
+
+Certbot configura HTTPS para ambos subdominios en una sola pasada.
+
+### 4. DNS en Namecheap
+
+Agregar dos registros A apuntando ambos subdominios a la misma IP del EC2:
+
+| Host | Type | Value |
+|------|------|-------|
+| `rifa1` | A | `<IP del EC2>` |
+| `rifa2` | A | `<IP del EC2>` |
+
+---
+
 ## Próximos ciclos
 
 | Ciclo | Qué construimos | Concepto / Motivo |
