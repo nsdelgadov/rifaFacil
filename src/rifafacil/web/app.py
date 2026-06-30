@@ -273,6 +273,66 @@ async def admin_config_refresh(
     )
 
 
+@app.post("/admin/boletos/confirmar-lote", response_class=HTMLResponse)
+async def admin_confirmar_lote(
+    request: Request,
+    numeros: list[int] = Form(),
+    orden: str = Form(default="numero"),
+    dir: str = Form(default="asc"),
+    q: str = Form(default=""),
+    _: None = Depends(_verificar_admin),
+):
+    rifa = obtener_rifa()
+    for numero in numeros:
+        try:
+            rifa.confirmar_pago(numero)
+        except ValueError:
+            pass
+    guardar_rifa(rifa)
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/partials/tabla_boletos.html",
+        context={
+            "rifa": rifa,
+            "boletos_filtrados": _filtrar_y_ordenar(rifa.boletos, orden, dir, q),
+            "refresh_segundos": obtener_refresh_segundos(),
+            "orden": orden,
+            "dir": dir,
+            "q": q,
+        },
+    )
+
+
+@app.post("/admin/boletos/liberar-lote", response_class=HTMLResponse)
+async def admin_liberar_lote(
+    request: Request,
+    numeros: list[int] = Form(),
+    orden: str = Form(default="numero"),
+    dir: str = Form(default="asc"),
+    q: str = Form(default=""),
+    _: None = Depends(_verificar_admin),
+):
+    rifa = obtener_rifa()
+    for numero in numeros:
+        try:
+            rifa.liberar_boleto(numero)
+        except ValueError:
+            pass
+    guardar_rifa(rifa)
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/partials/tabla_boletos.html",
+        context={
+            "rifa": rifa,
+            "boletos_filtrados": _filtrar_y_ordenar(rifa.boletos, orden, dir, q),
+            "refresh_segundos": obtener_refresh_segundos(),
+            "orden": orden,
+            "dir": dir,
+            "q": q,
+        },
+    )
+
+
 @app.post("/admin/boletos/{numero}/confirmar", response_class=HTMLResponse)
 async def admin_confirmar(request: Request, numero: int, _: None = Depends(_verificar_admin)):
     rifa = obtener_rifa()

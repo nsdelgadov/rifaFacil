@@ -1,4 +1,10 @@
 <tr id="fila-{{ boleto.numero.valor }}" class="border-b">
+  <td class="py-2 px-4 w-10">
+    {% if boleto.estado == 'reservado' %}
+      <input type="checkbox" class="admin-chk w-4 h-4 cursor-pointer rounded"
+             value="{{ boleto.numero.valor }}">
+    {% endif %}
+  </td>
   <td class="py-2 px-4 font-mono">{{ "%03d" | format(boleto.numero.valor) }}</td>
   <td class="py-2 px-4">
     {% if boleto.estado == 'disponible' %}
