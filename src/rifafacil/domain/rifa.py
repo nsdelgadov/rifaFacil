@@ -59,6 +59,10 @@ class Rifa(BaseModel):
     def reservar_boleto(self, numero: int, participante: Participante, reservado_en: datetime | None = None) -> None:
         self.obtener_boleto(numero).reservar(participante, reservado_en)
 
+    def reservar_boletos(self, numeros: list[int], participante: Participante, reservado_en: datetime | None = None) -> None:
+        for numero in numeros:
+            self.reservar_boleto(numero, participante, reservado_en)
+
     def confirmar_pago(self, numero: int) -> None:
         self.obtener_boleto(numero).confirmar_pago()
 

@@ -140,3 +140,23 @@ def test_reservar_boleto_guarda_fecha():
     rifa.reservar_boleto(numero=1, participante=_participante(), reservado_en=ahora)
 
     assert rifa.obtener_boleto(1).reservado_en == ahora
+
+
+# ── Ciclo 17 ── Reserva múltiple ──────────────────────────────────────────
+
+def test_reservar_multiples_boletos():
+    rifa = _crear_rifa(cantidad_boletos=5)
+    rifa.reservar_boletos(numeros=[1, 3, 5], participante=_participante())
+
+    assert rifa.obtener_boleto(1).estado == EstadoBoleto.RESERVADO
+    assert rifa.obtener_boleto(3).estado == EstadoBoleto.RESERVADO
+    assert rifa.obtener_boleto(5).estado == EstadoBoleto.RESERVADO
+    assert rifa.obtener_boleto(2).estado == EstadoBoleto.DISPONIBLE
+
+
+def test_reservar_multiples_boletos_falla_si_uno_no_disponible():
+    rifa = _crear_rifa(cantidad_boletos=5)
+    rifa.reservar_boleto(numero=2, participante=_participante())
+
+    with pytest.raises(ValueError):
+        rifa.reservar_boletos(numeros=[1, 2, 3], participante=_participante())
