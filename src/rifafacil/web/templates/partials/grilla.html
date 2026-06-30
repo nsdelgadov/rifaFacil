@@ -41,11 +41,11 @@
 <script>
 (function () {
   window._rfSel = window._rfSel || new Set();
-  var MAX = {{ max_boletos }};
+  const MAX = {{ max_boletos }};
 
   window._rfActualizar = function () {
     document.querySelectorAll('[data-disponible]').forEach(function (el) {
-      var sel = window._rfSel.has(parseInt(el.dataset.numero));
+      const sel = window._rfSel.has(parseInt(el.dataset.numero));
       el.classList.toggle('ring-2', sel);
       el.classList.toggle('ring-offset-1', sel);
       el.classList.toggle('ring-yellow-400', sel);
@@ -56,9 +56,9 @@
       el.classList.toggle('border-green-500', !sel);
       el.classList.toggle('text-green-800', !sel);
     });
-    var bar = document.getElementById('barra-seleccion');
+    const bar = document.getElementById('barra-seleccion');
     if (!bar) return;
-    var n = window._rfSel.size;
+    const n = window._rfSel.size;
     if (n > 0) {
       bar.classList.remove('translate-y-full');
       bar.querySelector('[data-rf-count]').textContent =
@@ -72,11 +72,11 @@
     window._rfClickInstalled = true;
 
     document.addEventListener('click', function (e) {
-      var tip = document.getElementById('boleto-tip');
+      const tip = document.getElementById('boleto-tip');
 
-      var elDisp = e.target.closest('[data-disponible]');
+      const elDisp = e.target.closest('[data-disponible]');
       if (elDisp) {
-        var n = parseInt(elDisp.dataset.numero);
+        const n = parseInt(elDisp.dataset.numero);
         if (window._rfSel.has(n)) {
           window._rfSel.delete(n);
         } else {
@@ -97,12 +97,12 @@
         return;
       }
 
-      var elInfo = e.target.closest('[data-info]');
+      const elInfo = e.target.closest('[data-info]');
       if (elInfo) {
         if (tip) {
           tip.textContent = elInfo.dataset.info;
           tip.classList.remove('hidden');
-          var x = Math.max(4, e.clientX - tip.offsetWidth / 2);
+          let x = Math.max(4, e.clientX - tip.offsetWidth / 2);
           x = Math.min(x, window.innerWidth - tip.offsetWidth - 4);
           tip.style.left = x + 'px';
           tip.style.top = (e.clientY - 44) + 'px';
@@ -114,7 +114,7 @@
 
       if (e.target.closest('#btn-reservar-seleccion')) {
         if (window._rfSel.size > 0) {
-          var nums = Array.from(window._rfSel).sort(function (a, b) { return a - b; }).join(',');
+          const nums = Array.from(window._rfSel).sort(function (a, b) { return a - b; }).join(',');
           htmx.ajax('GET', '/boletos/formulario?numeros=' + nums, { target: '#modal', swap: 'innerHTML' });
         }
         return;
