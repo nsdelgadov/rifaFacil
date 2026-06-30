@@ -1,43 +1,92 @@
-<tr id="fila-{{ boleto.numero.valor }}" class="border-b">
-  <td class="py-2 px-4 w-10">
-    {% if boleto.estado == 'reservado' %}
-      <input type="checkbox" class="admin-chk w-4 h-4 cursor-pointer rounded"
-             value="{{ boleto.numero.valor }}">
-    {% endif %}
-  </td>
-  <td class="py-2 px-4 font-mono">{{ "%03d" | format(boleto.numero.valor) }}</td>
-  <td class="py-2 px-4">
-    {% if boleto.estado == 'disponible' %}
-      <span class="text-green-700 font-medium">Disponible</span>
-    {% elif boleto.estado == 'reservado' %}
-      <span class="text-yellow-700 font-medium">Reservado</span>
-    {% else %}
-      <span class="text-blue-700 font-medium">Pagado</span>
-    {% endif %}
-  </td>
-  <td class="py-2 px-4">{{ boleto.participante.nombre if boleto.participante else "—" }}</td>
-  <td class="py-2 px-4">{{ boleto.participante.telefono.numero if boleto.participante else "—" }}</td>
-  <td class="py-2 px-4 text-gray-500 text-xs">{{ boleto.reservado_en | fecha }}</td>
-  <td class="py-2 px-4 space-x-2">
-    {% if boleto.estado == 'reservado' %}
-      <button id="btn-confirmar-{{ boleto.numero.valor }}"
-              hx-post="/admin/boletos/{{ boleto.numero.valor }}/confirmar"
-              hx-target="#fila-{{ boleto.numero.valor }}"
-              hx-swap="outerHTML"
-              hx-disabled-elt="#btn-confirmar-{{ boleto.numero.valor }}, #btn-liberar-{{ boleto.numero.valor }}"
-              class="group bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed">
-        <span class="group-[.htmx-request]:hidden">Confirmar pago</span>
-        <span class="hidden group-[.htmx-request]:inline">Cargando…</span>
-      </button>
-      <button id="btn-liberar-{{ boleto.numero.valor }}"
-              hx-post="/admin/boletos/{{ boleto.numero.valor }}/liberar"
-              hx-target="#fila-{{ boleto.numero.valor }}"
-              hx-swap="outerHTML"
-              hx-disabled-elt="#btn-confirmar-{{ boleto.numero.valor }}, #btn-liberar-{{ boleto.numero.valor }}"
-              class="group bg-red-100 text-red-700 text-sm px-3 py-1 rounded hover:bg-red-200 disabled:opacity-60 disabled:cursor-not-allowed">
-        <span class="group-[.htmx-request]:hidden">Liberar</span>
-        <span class="hidden group-[.htmx-request]:inline">Cargando…</span>
-      </button>
-    {% endif %}
-  </td>
-</tr>
+<tbody id="fila-{{ boleto.numero.valor }}">
+  <!-- Fila principal (siempre visible) -->
+  <tr>
+    <td class="py-2 px-3 w-10">
+      {% if boleto.estado == 'reservado' %}
+        <input type="checkbox" class="admin-chk w-4 h-4 cursor-pointer rounded"
+               value="{{ boleto.numero.valor }}">
+      {% endif %}
+    </td>
+    <td class="py-2 px-3 font-mono text-sm">{{ "%03d" | format(boleto.numero.valor) }}</td>
+    <td class="py-2 px-3 whitespace-nowrap text-sm">
+      {% if boleto.estado == 'disponible' %}
+        <span class="text-green-700 font-medium">Disponible</span>
+      {% elif boleto.estado == 'reservado' %}
+        <span class="text-yellow-700 font-medium">Reservado</span>
+      {% else %}
+        <span class="text-blue-700 font-medium">Pagado</span>
+      {% endif %}
+    </td>
+    <td class="py-2 px-3 text-sm max-w-[8rem]">
+      {% set nombre = boleto.participante.nombre if boleto.participante else "—" %}
+      {% if nombre | length > 10 %}
+        <span class="block truncate cursor-pointer"
+              title="{{ nombre }}"
+              data-fullname="{{ nombre }}"
+              onclick="_adminTip(this)">{{ nombre }}</span>
+      {% else %}
+        <span class="block">{{ nombre }}</span>
+      {% endif %}
+    </td>
+    <!-- Solo desktop -->
+    <td class="hidden md:table-cell py-2 px-3 text-sm">
+      {{ boleto.participante.telefono.numero if boleto.participante else "—" }}
+    </td>
+    <td class="hidden md:table-cell py-2 px-3 text-gray-500 text-xs whitespace-nowrap">
+      {{ boleto.reservado_en | fecha }}
+    </td>
+    <td class="hidden md:table-cell py-2 px-3 space-x-2">
+      {% if boleto.estado == 'reservado' %}
+        <button id="btn-confirmar-{{ boleto.numero.valor }}"
+                hx-post="/admin/boletos/{{ boleto.numero.valor }}/confirmar"
+                hx-target="#fila-{{ boleto.numero.valor }}"
+                hx-swap="outerHTML"
+                hx-disabled-elt="#btn-confirmar-{{ boleto.numero.valor }}, #btn-liberar-{{ boleto.numero.valor }}"
+                class="group bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed">
+          <span class="group-[.htmx-request]:hidden">Confirmar pago</span>
+          <span class="hidden group-[.htmx-request]:inline">Cargando…</span>
+        </button>
+        <button id="btn-liberar-{{ boleto.numero.valor }}"
+                hx-post="/admin/boletos/{{ boleto.numero.valor }}/liberar"
+                hx-target="#fila-{{ boleto.numero.valor }}"
+                hx-swap="outerHTML"
+                hx-disabled-elt="#btn-confirmar-{{ boleto.numero.valor }}, #btn-liberar-{{ boleto.numero.valor }}"
+                class="group bg-red-100 text-red-700 text-sm px-3 py-1 rounded hover:bg-red-200 disabled:opacity-60 disabled:cursor-not-allowed">
+          <span class="group-[.htmx-request]:hidden">Liberar</span>
+          <span class="hidden group-[.htmx-request]:inline">Cargando…</span>
+        </button>
+      {% endif %}
+    </td>
+  </tr>
+  <!-- Fila de detalle (solo mobile) -->
+  <tr class="md:hidden border-b">
+    <td colspan="3"></td>
+    <td colspan="4" class="pb-2 pt-0.5 px-3">
+      <div class="text-xs text-gray-500 mb-1.5">
+        {% if boleto.participante %}{{ boleto.participante.telefono.numero }} · {% endif %}{{ boleto.reservado_en | fecha }}
+      </div>
+      {% if boleto.estado == 'reservado' %}
+        <div class="flex gap-2">
+          <button id="btn-m-confirmar-{{ boleto.numero.valor }}"
+                  hx-post="/admin/boletos/{{ boleto.numero.valor }}/confirmar"
+                  hx-target="#fila-{{ boleto.numero.valor }}"
+                  hx-swap="outerHTML"
+                  hx-disabled-elt="#btn-m-confirmar-{{ boleto.numero.valor }}, #btn-m-liberar-{{ boleto.numero.valor }}"
+                  class="group bg-blue-600 text-white text-xs px-3 py-1 rounded hover:bg-blue-700 disabled:opacity-60">
+            <span class="group-[.htmx-request]:hidden">Confirmar pago</span>
+            <span class="hidden group-[.htmx-request]:inline">Cargando…</span>
+          </button>
+          <button id="btn-m-liberar-{{ boleto.numero.valor }}"
+                  hx-post="/admin/boletos/{{ boleto.numero.valor }}/liberar"
+                  hx-target="#fila-{{ boleto.numero.valor }}"
+                  hx-swap="outerHTML"
+                  hx-disabled-elt="#btn-m-confirmar-{{ boleto.numero.valor }}, #btn-m-liberar-{{ boleto.numero.valor }}"
+                  class="group bg-red-100 text-red-700 text-xs px-3 py-1 rounded hover:bg-red-200 disabled:opacity-60">
+            <span class="group-[.htmx-request]:hidden">Liberar</span>
+            <span class="hidden group-[.htmx-request]:inline">Cargando…</span>
+          </button>
+        </div>
+      {% endif %}
+    </td>
+  </tr>
+</tbody>
