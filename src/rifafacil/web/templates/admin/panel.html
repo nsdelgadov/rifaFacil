@@ -13,8 +13,39 @@
     {% include "admin/partials/config_refresh.html" %}
   </div>
 
+  <div class="mb-4">
+    {% include "admin/partials/config_max_boletos.html" %}
+  </div>
+
   <div class="mb-6">
     {% include "admin/partials/config_campaign.html" %}
+  </div>
+
+  <!-- Barra de acciones en lote (fuera de #admin-tabla para sobrevivir auto-refresh) -->
+  <div id="admin-barra-lote" class="hidden mb-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3
+                                    flex items-center justify-between gap-4
+                                    sticky top-0 z-30 shadow-sm">
+    <span data-admin-count class="text-sm font-medium text-amber-800"></span>
+    <div class="flex gap-2">
+      <button id="btn-confirmar-lote" type="button"
+              hx-post="/admin/boletos/confirmar-lote"
+              hx-target="#admin-tabla"
+              hx-swap="outerHTML"
+              hx-disabled-elt="#btn-confirmar-lote, #btn-liberar-lote"
+              class="group bg-blue-600 text-white text-sm px-3 py-1.5 rounded hover:bg-blue-700 disabled:opacity-50">
+        <span class="group-[.htmx-request]:hidden">Confirmar pagos</span>
+        <span class="hidden group-[.htmx-request]:inline">Cargando…</span>
+      </button>
+      <button id="btn-liberar-lote" type="button"
+              hx-post="/admin/boletos/liberar-lote"
+              hx-target="#admin-tabla"
+              hx-swap="outerHTML"
+              hx-disabled-elt="#btn-confirmar-lote, #btn-liberar-lote"
+              class="group bg-red-100 text-red-700 text-sm px-3 py-1.5 rounded hover:bg-red-200 disabled:opacity-50">
+        <span class="group-[.htmx-request]:hidden">Liberar</span>
+        <span class="hidden group-[.htmx-request]:inline">Cargando…</span>
+      </button>
+    </div>
   </div>
 
   {% include "admin/partials/tabla_boletos.html" %}

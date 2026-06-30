@@ -25,8 +25,11 @@
     <table class="w-full text-sm text-left">
       <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
         <tr>
-          <th class="py-3 px-4">N°</th>
-          <th class="py-3 px-4">
+          <th class="py-3 px-3 w-10">
+            <input type="checkbox" id="admin-chk-all" class="w-4 h-4 cursor-pointer rounded" title="Seleccionar todos">
+          </th>
+          <th class="py-3 px-3">N°</th>
+          <th class="py-3 px-3">
             {% set next_dir_estado = "desc" if orden == "estado" and dir == "asc" else "asc" %}
             <button hx-get="/admin/tabla?orden=estado&dir={{ next_dir_estado }}"
                     hx-target="#admin-tabla"
@@ -36,9 +39,9 @@
               Estado{% if orden == "estado" %} {{ "↑" if dir == "asc" else "↓" }}{% endif %}
             </button>
           </th>
-          <th class="py-3 px-4">Nombre</th>
-          <th class="py-3 px-4">Teléfono</th>
-          <th class="py-3 px-4">
+          <th class="py-3 px-3">Nombre</th>
+          <th class="hidden md:table-cell py-3 px-3">Teléfono</th>
+          <th class="hidden md:table-cell py-3 px-3">
             {% set next_dir_reservado = "desc" if orden == "reservado_en" and dir == "asc" else "asc" %}
             <button hx-get="/admin/tabla?orden=reservado_en&dir={{ next_dir_reservado }}"
                     hx-target="#admin-tabla"
@@ -48,14 +51,12 @@
               Reservado{% if orden == "reservado_en" %} {{ "↑" if dir == "asc" else "↓" }}{% endif %}
             </button>
           </th>
-          <th class="py-3 px-4">Acciones</th>
+          <th class="hidden md:table-cell py-3 px-3">Acciones</th>
         </tr>
       </thead>
-      <tbody>
-        {% for boleto in boletos_filtrados %}
-          {% include "admin/partials/fila_boleto.html" %}
-        {% endfor %}
-      </tbody>
+      {% for boleto in boletos_filtrados %}
+        {% include "admin/partials/fila_boleto.html" %}
+      {% endfor %}
     </table>
 
     {% if not boletos_filtrados %}
@@ -70,3 +71,97 @@
     {{ rifa.boletos | selectattr("estado", "equalto", "pagado") | list | length }} pagados
   </p>
 </div>
+
+<script>
+(function () {
+  window._adminSel = window._adminSel || new Set();
+
+  window._adminTip = function (el) {
+    var tip = document.getElementById('admin-nombre-tip');
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.id = 'admin-nombre-tip';
+      tip.className = 'fixed bg-gray-800 text-white text-sm px-3 py-1.5 rounded-lg z-50 shadow-lg pointer-events-none';
+      document.body.appendChild(tip);
+    }
+    tip.textContent = el.dataset.fullname;
+    var r = el.getBoundingClientRect();
+    tip.style.left = Math.max(4, r.left + r.width / 2 - 80) + 'px';
+    tip.style.top = (r.bottom + 6) + 'px';
+    tip.style.display = 'block';
+    clearTimeout(tip._t);
+    tip._t = setTimeout(function () { tip.style.display = 'none'; }, 2500);
+  };
+
+  window._adminActualizar = function () {
+    var n = window._adminSel.size;
+    var barra = document.getElementById('admin-barra-lote');
+    if (barra) {
+      if (n > 0) {
+        barra.classList.remove('hidden');
+        var counter = barra.querySelector('[data-admin-count]');
+        if (counter) counter.textContent = n === 1 ? '1 boleto seleccionado' : n + ' boletos seleccionados';
+      } else {
+        barra.classList.add('hidden');
+      }
+    }
+    document.querySelectorAll('.admin-chk').forEach(function (chk) {
+      chk.checked = window._adminSel.has(parseInt(chk.value));
+    });
+    var chkAll = document.getElementById('admin-chk-all');
+    if (chkAll) {
+      var todos = document.querySelectorAll('.admin-chk');
+      chkAll.indeterminate = false;
+      if (todos.length === 0 || n === 0) {
+        chkAll.checked = false;
+      } else if (Array.from(todos).every(function (c) { return window._adminSel.has(parseInt(c.value)); })) {
+        chkAll.checked = true;
+      } else {
+        chkAll.indeterminate = true;
+      }
+    }
+  };
+
+  if (!window._adminHandlersInstalled) {
+    window._adminHandlersInstalled = true;
+
+    document.addEventListener('change', function (e) {
+      var chk = e.target.closest('.admin-chk');
+      if (chk) {
+        if (chk.checked) window._adminSel.add(parseInt(chk.value));
+        else window._adminSel.delete(parseInt(chk.value));
+        window._adminActualizar();
+        return;
+      }
+      if (e.target.id === 'admin-chk-all') {
+        document.querySelectorAll('.admin-chk').forEach(function (c) {
+          if (e.target.checked) window._adminSel.add(parseInt(c.value));
+          else window._adminSel.delete(parseInt(c.value));
+        });
+        window._adminActualizar();
+      }
+    });
+
+    document.addEventListener('htmx:configRequest', function (e) {
+      var id = e.detail.elt && e.detail.elt.id;
+      if (id !== 'btn-confirmar-lote' && id !== 'btn-liberar-lote') return;
+      window._adminLoteSwapPending = true;
+      var numeros = Array.from(window._adminSel);
+      e.detail.parameters['numeros'] = numeros.length === 1 ? numeros[0] : numeros;
+      e.detail.parameters['orden'] = (document.getElementById('admin-orden-input') || {}).value || 'numero';
+      e.detail.parameters['dir'] = (document.getElementById('admin-dir-input') || {}).value || 'asc';
+      e.detail.parameters['q'] = (document.getElementById('admin-buscar') || {}).value || '';
+    });
+
+    document.addEventListener('htmx:afterSwap', function (e) {
+      if (e.detail.target && e.detail.target.id === 'admin-tabla' && window._adminLoteSwapPending) {
+        window._adminLoteSwapPending = false;
+        window._adminSel.clear();
+        window._adminActualizar && window._adminActualizar();
+      }
+    });
+  }
+
+  window._adminActualizar();
+})();
+</script>

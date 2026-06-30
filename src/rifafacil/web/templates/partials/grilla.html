@@ -7,25 +7,31 @@
   <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
     {% for boleto in rifa.boletos %}
       {% if boleto.estado == 'disponible' %}
-        {% set cls = "bg-green-50 border-green-500 text-green-800 hover:bg-green-100 cursor-pointer" %}
+        <div class="border-2 rounded-lg p-2 text-center text-sm font-mono font-medium transition-colors min-w-0
+                    bg-green-50 border-green-500 text-green-800 hover:bg-green-100 cursor-pointer select-none"
+             data-numero="{{ boleto.numero.valor }}"
+             data-disponible="1">
+          {{ "%03d" | format(boleto.numero.valor) }}
+        </div>
       {% elif boleto.estado == 'reservado' %}
-        {% set cls = "bg-blue-50 border-blue-500 text-blue-800 cursor-not-allowed" %}
+        <div class="border-2 rounded-lg p-2 text-center text-sm font-mono font-medium transition-colors min-w-0
+                    bg-blue-50 border-blue-500 text-blue-800 cursor-not-allowed"
+             {% if boleto.participante %}data-info="Reservado: {{ boleto.participante.nombre }}"{% endif %}>
+          {{ "%03d" | format(boleto.numero.valor) }}
+          {% if boleto.participante %}
+            <div class="text-xs font-sans font-normal truncate mt-0.5">{{ boleto.participante.nombre }}</div>
+          {% endif %}
+        </div>
       {% else %}
-        {% set cls = "bg-red-100 border-red-400 text-red-800 line-through cursor-not-allowed" %}
+        <div class="border-2 rounded-lg p-2 text-center text-sm font-mono font-medium transition-colors min-w-0
+                    bg-red-100 border-red-400 text-red-800 line-through cursor-not-allowed"
+             {% if boleto.participante %}data-info="Pagado: {{ boleto.participante.nombre }}"{% endif %}>
+          {{ "%03d" | format(boleto.numero.valor) }}
+          {% if boleto.participante %}
+            <div class="text-xs font-sans font-normal truncate mt-0.5">{{ boleto.participante.nombre }}</div>
+          {% endif %}
+        </div>
       {% endif %}
-      <div class="border-2 rounded-lg p-2 text-center text-sm font-mono font-medium transition-colors min-w-0 {{ cls }}"
-           {% if boleto.estado == 'disponible' %}
-           hx-get="/boletos/{{ boleto.numero.valor }}/formulario"
-           hx-target="#modal"
-           hx-swap="innerHTML"
-           {% elif boleto.participante %}
-           data-info="{{ boleto.estado | capitalize }}: {{ boleto.participante.nombre }}"
-           {% endif %}>
-        {{ "%03d" | format(boleto.numero.valor) }}
-        {% if boleto.participante %}
-          <div class="text-xs font-sans font-normal truncate mt-0.5">{{ boleto.participante.nombre }}</div>
-        {% endif %}
-      </div>
     {% endfor %}
   </div>
 
@@ -33,22 +39,97 @@
 </div>
 
 <script>
-  (function () {
-    var tip = document.getElementById('boleto-tip');
-    document.addEventListener('click', function (e) {
-      var el = e.target.closest('[data-info]');
-      if (el) {
-        tip.textContent = el.dataset.info;
-        tip.classList.remove('hidden');
-        var x = Math.max(4, e.clientX - tip.offsetWidth / 2);
-        x = Math.min(x, window.innerWidth - tip.offsetWidth - 4);
-        tip.style.left = x + 'px';
-        tip.style.top = (e.clientY - 44) + 'px';
-        clearTimeout(tip._t);
-        tip._t = setTimeout(function () { tip.classList.add('hidden'); }, 2000);
-      } else {
-        tip.classList.add('hidden');
-      }
+(function () {
+  window._rfSel = window._rfSel || new Set();
+  const MAX = {{ max_boletos }};
+
+  window._rfActualizar = function () {
+    document.querySelectorAll('[data-disponible]').forEach(function (el) {
+      const sel = window._rfSel.has(parseInt(el.dataset.numero));
+      el.classList.toggle('ring-2', sel);
+      el.classList.toggle('ring-offset-1', sel);
+      el.classList.toggle('ring-yellow-400', sel);
+      el.classList.toggle('bg-yellow-100', sel);
+      el.classList.toggle('border-yellow-500', sel);
+      el.classList.toggle('text-yellow-900', sel);
+      el.classList.toggle('bg-green-50', !sel);
+      el.classList.toggle('border-green-500', !sel);
+      el.classList.toggle('text-green-800', !sel);
     });
-  })();
+    const bar = document.getElementById('barra-seleccion');
+    if (!bar) return;
+    const n = window._rfSel.size;
+    if (n > 0) {
+      bar.classList.remove('translate-y-full');
+      bar.querySelector('[data-rf-count]').textContent =
+        n === 1 ? '1 boleto seleccionado' : n + ' boletos seleccionados';
+    } else {
+      bar.classList.add('translate-y-full');
+    }
+  };
+
+  if (!window._rfClickInstalled) {
+    window._rfClickInstalled = true;
+
+    document.addEventListener('click', function (e) {
+      const tip = document.getElementById('boleto-tip');
+
+      const elDisp = e.target.closest('[data-disponible]');
+      if (elDisp) {
+        const n = parseInt(elDisp.dataset.numero);
+        if (window._rfSel.has(n)) {
+          window._rfSel.delete(n);
+        } else {
+          if (window._rfSel.size >= MAX) {
+            if (tip) {
+              tip.textContent = 'Máximo ' + MAX + ' boletos por reserva';
+              tip.classList.remove('hidden');
+              tip.style.left = Math.max(4, e.clientX - 100) + 'px';
+              tip.style.top = (e.clientY - 44) + 'px';
+              clearTimeout(tip._t);
+              tip._t = setTimeout(function () { tip.classList.add('hidden'); }, 2000);
+            }
+            return;
+          }
+          window._rfSel.add(n);
+        }
+        window._rfActualizar();
+        return;
+      }
+
+      const elInfo = e.target.closest('[data-info]');
+      if (elInfo) {
+        if (tip) {
+          tip.textContent = elInfo.dataset.info;
+          tip.classList.remove('hidden');
+          let x = Math.max(4, e.clientX - tip.offsetWidth / 2);
+          x = Math.min(x, window.innerWidth - tip.offsetWidth - 4);
+          tip.style.left = x + 'px';
+          tip.style.top = (e.clientY - 44) + 'px';
+          clearTimeout(tip._t);
+          tip._t = setTimeout(function () { tip.classList.add('hidden'); }, 2000);
+        }
+        return;
+      }
+
+      if (e.target.closest('#btn-reservar-seleccion')) {
+        if (window._rfSel.size > 0) {
+          const nums = Array.from(window._rfSel).sort(function (a, b) { return a - b; }).join(',');
+          htmx.ajax('GET', '/boletos/formulario?numeros=' + nums, { target: '#modal', swap: 'innerHTML' });
+        }
+        return;
+      }
+
+      if (e.target.closest('#btn-limpiar-seleccion')) {
+        window._rfSel.clear();
+        window._rfActualizar();
+        return;
+      }
+
+      if (tip) tip.classList.add('hidden');
+    });
+  }
+
+  window._rfActualizar();
+})();
 </script>

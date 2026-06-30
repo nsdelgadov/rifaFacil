@@ -1,0 +1,12 @@
+<form hx-post="/admin/config/max-boletos"
+      hx-swap="outerHTML"
+      hx-disabled-elt="find button"
+      hx-on:htmx:before-request="this.querySelector('button').textContent='Guardando…'"
+      class="flex items-center gap-2">
+  <span class="text-sm text-gray-600">Máx. boletos por reserva:</span>
+  <input type="number" name="max_boletos" value="{{ max_boletos }}"
+         min="1" max="100"
+         class="border rounded px-2 py-1 text-sm w-20 text-center" />
+  <span class="text-xs text-gray-400">mín. 1</span>
+  <button class="bg-gray-700 text-white text-xs px-3 py-1 rounded hover:bg-gray-800 disabled:opacity-50">Guardar</button>
+</form>

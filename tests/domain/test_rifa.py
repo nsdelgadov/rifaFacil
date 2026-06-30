@@ -140,3 +140,44 @@ def test_reservar_boleto_guarda_fecha():
     rifa.reservar_boleto(numero=1, participante=_participante(), reservado_en=ahora)
 
     assert rifa.obtener_boleto(1).reservado_en == ahora
+
+
+# ── Ciclo 17 ── Reserva múltiple ──────────────────────────────────────────
+
+def test_reservar_multiples_boletos():
+    rifa = _crear_rifa(cantidad_boletos=5)
+    rifa.reservar_boletos(numeros=[1, 3, 5], participante=_participante())
+
+    assert rifa.obtener_boleto(1).estado == EstadoBoleto.RESERVADO
+    assert rifa.obtener_boleto(3).estado == EstadoBoleto.RESERVADO
+    assert rifa.obtener_boleto(5).estado == EstadoBoleto.RESERVADO
+    assert rifa.obtener_boleto(2).estado == EstadoBoleto.DISPONIBLE
+
+
+def test_reservar_multiples_boletos_falla_si_uno_no_disponible():
+    rifa = _crear_rifa(cantidad_boletos=5)
+    rifa.reservar_boleto(numero=2, participante=_participante())
+
+    with pytest.raises(ValueError):
+        rifa.reservar_boletos(numeros=[1, 2, 3], participante=_participante())
+
+
+def test_confirmar_pagos_en_lote():
+    rifa = _crear_rifa(cantidad_boletos=5)
+    rifa.reservar_boleto(1, _participante())
+    rifa.reservar_boleto(3, _participante())
+    rifa.confirmar_pagos([1, 3])
+
+    assert rifa.obtener_boleto(1).estado == EstadoBoleto.PAGADO
+    assert rifa.obtener_boleto(3).estado == EstadoBoleto.PAGADO
+    assert rifa.obtener_boleto(2).estado == EstadoBoleto.DISPONIBLE
+
+
+def test_liberar_boletos_en_lote():
+    rifa = _crear_rifa(cantidad_boletos=5)
+    rifa.reservar_boleto(2, _participante())
+    rifa.reservar_boleto(4, _participante())
+    rifa.liberar_boletos([2, 4])
+
+    assert rifa.obtener_boleto(2).estado == EstadoBoleto.DISPONIBLE
+    assert rifa.obtener_boleto(4).estado == EstadoBoleto.DISPONIBLE

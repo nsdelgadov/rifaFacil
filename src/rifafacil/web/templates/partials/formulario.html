@@ -1,12 +1,19 @@
 <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
      onclick="if(event.target===this) document.getElementById('modal').innerHTML=''">
   <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
-    <h2 class="text-xl font-bold mb-1">Reservar boleto</h2>
-    <p class="text-gray-400 text-sm mb-5">N°{{ "%03d" | format(boleto.numero.valor) }}</p>
+    <h2 class="text-xl font-bold mb-1">Reservar boleto{{ 's' if boletos|length > 1 }}</h2>
+    <p class="text-gray-400 text-sm mb-5">
+      N°{% for b in boletos %}{{ "%03d" | format(b.numero.valor) }}{% if not loop.last %}, {% endif %}{% endfor %}
+    </p>
 
-    <form hx-post="/boletos/{{ boleto.numero.valor }}/reservar"
+    <form hx-post="/boletos/reservar"
           hx-target="#modal"
-          hx-swap="innerHTML">
+          hx-swap="innerHTML"
+          hx-disabled-elt="find button[type=submit]"
+          hx-on:htmx:before-request="this.querySelector('button[type=submit]').textContent='Cargando…'">
+      {% for b in boletos %}
+        <input type="hidden" name="numeros" value="{{ b.numero.valor }}">
+      {% endfor %}
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-700 mb-1">Tu nombre</label>
         <input type="text" name="nombre" required autofocus
@@ -21,7 +28,7 @@
       </div>
       <div class="flex gap-3">
         <button type="submit"
-                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg py-2 transition-colors">
+                class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg py-2 transition-colors disabled:opacity-50">
           Reservar
         </button>
         <button type="button"

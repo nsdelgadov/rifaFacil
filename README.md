@@ -155,16 +155,45 @@ El admin confirma pagos y libera reservas desde `/admin`. HTMX actualiza solo la
 - Orden por Estado (reservado → pagado) o por fecha de reserva (asc/desc)
 - Buscador por nombre de participante o número de boleto (`003`)
 
+### Ciclo 16 — Confianza y transparencia ✅
+
+**Concepto**: información que genera confianza en el comprador antes de reservar.
+- Link a campaña externa (Instagram, Facebook, etc.) visible debajo del título
+- Galería de imágenes de la causa con carrusel (hasta 10 imágenes, máx. 2 MB c/u)
+- Imagen principal como thumbnail sticky junto al título; click abre el carrusel a 90vw/90vh
+- Todo gestionado desde `/admin`: subir/eliminar imágenes, marcar principal, guardar link
+- Estados de carga en todos los botones del admin (Guardar, subir imagen, marcar principal)
+
+### Ciclo 17 — Selección múltiple de boletos ✅
+
+**Concepto**: flujo optimizado para compradores que quieren aportar más de un boleto.
+
+**Grilla pública**:
+- Click en boleto disponible lo selecciona (amarillo). Click de nuevo lo deselecciona
+- Barra flotante en la parte inferior muestra cuántos están seleccionados + botones Limpiar / Reservar →
+- La selección persiste entre refrescos automáticos del HTMX (`window._rfSel`)
+- Máximo de boletos por reserva configurable desde el admin (default 20, persiste en SQLite)
+
+**Formulario y confirmación**:
+- Un solo formulario para todos los boletos seleccionados
+- Botón "Reservar" muestra "Cargando…" y se deshabilita durante el POST
+- Mensaje WhatsApp incluye todos los números y el total a transferir
+- Al cerrar la confirmación, la selección se limpia automáticamente
+
+**Panel admin**:
+- Checkboxes en filas RESERVADO con "seleccionar todos" (estado `indeterminate` en selección parcial)
+- Barra sticky encima de la tabla para confirmar o liberar boletos en lote
+- La selección sobrevive al auto-refresh; se limpia solo tras una acción en lote
+- Tabla responsive en mobile: 2 filas por boleto (principal + detalle con teléfono, fecha y botones)
+- Estado nunca truncado ("Reservado" / "Pagado" completos). Nombres largos con ellipsis y tooltip al tocar
+
 ---
 
 ## Próximos ciclos
 
 | Ciclo | Qué construimos | Concepto / Motivo |
 |-------|----------------|-------------------|
-| **14** | HTTPS con Namecheap + Let's Encrypt ✅ | Dominio propio en Namecheap apuntando a EC2 + certificado real via certbot + nginx. Necesario para mostrar a clientes sin alerta de "no seguro" |
-| **15** | UX del panel de administrador ✅ | Auto-refresh, estado cargando en botones, fecha de reserva, persistencia de refresh, ordenar por estado/fecha, buscador por nombre o número |
-| **16** | Confianza y transparencia | Link a campaña (Instagram/Facebook), imágenes de la causa, datos de cuenta bancaria para donaciones directas |
-| **17** | Selección múltiple de boletos | Elegir entre 1 y 10 boletos a la vez — flujo para quienes quieren aportar más |
-| **18** | Múltiples rifas — un solo admin | Soporte para más de una rifa activa en el mismo servidor, todas gestionadas por el mismo administrador |
-| **19** | Múltiples rifas — admin por rifa | Cada rifa tiene su propio administrador con credenciales independientes |
-| **20** | Migración a PostgreSQL + JSONB | Reemplazar SQLite por PostgreSQL en AWS RDS — misma flexibilidad de esquema mientras el dominio evoluciona, sin cambiar el dominio (solo la capa de infraestructura) |
+| **18** | Datos de la rifa y fecha de sorteo | Agregar fecha de sorteo visible al público. Si no se venden todos los boletos antes de la fecha, el admin puede postergar con una nueva fecha y un mensaje público explicando el motivo — transparencia ante los compradores |
+| **19** | Cierre de rifa y ganadores | El admin declara el sorteo realizado eligiendo los boletos ganadores. La página pública muestra el estado final: ganadores con nombre y número de boleto ganador, sin teléfonos. La rifa queda en modo cerrado (no se aceptan nuevas reservas) pero sigue siendo visible |
+| **20** | Múltiples rifas — admin por rifa | Cada rifa tiene su propio administrador con credenciales independientes |
+| **21** | Migración a PostgreSQL + JSONB | Reemplazar SQLite por PostgreSQL en AWS RDS — misma flexibilidad de esquema mientras el dominio evoluciona, sin cambiar el dominio (solo la capa de infraestructura) |
