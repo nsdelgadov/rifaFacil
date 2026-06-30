@@ -193,8 +193,7 @@ El admin confirma pagos y libera reservas desde `/admin`. HTMX actualiza solo la
 
 | Ciclo | Qué construimos | Concepto / Motivo |
 |-------|----------------|-------------------|
-| **16** | Confianza y transparencia ✅ | Link a campaña, galería de imágenes de la causa, imagen sticky en header |
-| **17** | Selección múltiple de boletos ✅ | Hasta N boletos a la vez (configurable); confirmación y liberación en lote desde el admin |
-| **18** | Múltiples rifas — un solo admin | Soporte para más de una rifa activa en el mismo servidor, todas gestionadas por el mismo administrador |
-| **19** | Múltiples rifas — admin por rifa | Cada rifa tiene su propio administrador con credenciales independientes |
-| **20** | Migración a PostgreSQL + JSONB | Reemplazar SQLite por PostgreSQL en AWS RDS — misma flexibilidad de esquema mientras el dominio evoluciona, sin cambiar el dominio (solo la capa de infraestructura) |
+| **18** | Datos de la rifa y fecha de sorteo | Agregar fecha de sorteo visible al público. Si no se venden todos los boletos antes de la fecha, el admin puede postergar con una nueva fecha y un mensaje público explicando el motivo — transparencia ante los compradores |
+| **19** | Cierre de rifa y ganadores | El admin declara el sorteo realizado eligiendo los boletos ganadores. La página pública muestra el estado final: ganadores con nombre y número de boleto ganador, sin teléfonos. La rifa queda en modo cerrado (no se aceptan nuevas reservas) pero sigue siendo visible |
+| **20** | Múltiples rifas — admin por rifa | Cada rifa tiene su propio administrador con credenciales independientes |
+| **21** | Migración a PostgreSQL + JSONB | Reemplazar SQLite por PostgreSQL en AWS RDS — misma flexibilidad de esquema mientras el dominio evoluciona, sin cambiar el dominio (solo la capa de infraestructura) |
