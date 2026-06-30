@@ -160,3 +160,24 @@ def test_reservar_multiples_boletos_falla_si_uno_no_disponible():
 
     with pytest.raises(ValueError):
         rifa.reservar_boletos(numeros=[1, 2, 3], participante=_participante())
+
+
+def test_confirmar_pagos_en_lote():
+    rifa = _crear_rifa(cantidad_boletos=5)
+    rifa.reservar_boleto(1, _participante())
+    rifa.reservar_boleto(3, _participante())
+    rifa.confirmar_pagos([1, 3])
+
+    assert rifa.obtener_boleto(1).estado == EstadoBoleto.PAGADO
+    assert rifa.obtener_boleto(3).estado == EstadoBoleto.PAGADO
+    assert rifa.obtener_boleto(2).estado == EstadoBoleto.DISPONIBLE
+
+
+def test_liberar_boletos_en_lote():
+    rifa = _crear_rifa(cantidad_boletos=5)
+    rifa.reservar_boleto(2, _participante())
+    rifa.reservar_boleto(4, _participante())
+    rifa.liberar_boletos([2, 4])
+
+    assert rifa.obtener_boleto(2).estado == EstadoBoleto.DISPONIBLE
+    assert rifa.obtener_boleto(4).estado == EstadoBoleto.DISPONIBLE
