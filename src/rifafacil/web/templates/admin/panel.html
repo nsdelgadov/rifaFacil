@@ -23,7 +23,8 @@
 
   <!-- Barra de acciones en lote (fuera de #admin-tabla para sobrevivir auto-refresh) -->
   <div id="admin-barra-lote" class="hidden mb-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3
-                                    flex items-center justify-between gap-4">
+                                    flex items-center justify-between gap-4
+                                    sticky top-0 z-30 shadow-sm">
     <span data-admin-count class="text-sm font-medium text-amber-800"></span>
     <div class="flex gap-2">
       <button id="btn-confirmar-lote" type="button"
