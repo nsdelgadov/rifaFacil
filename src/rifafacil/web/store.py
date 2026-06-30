@@ -66,6 +66,15 @@ def guardar_imagenes(imagenes: list[ImagenMeta]) -> None:
     _repo.set_config("imagenes", json.dumps([i.model_dump() for i in imagenes]))
 
 
+def obtener_max_boletos() -> int:
+    default = os.getenv("MAX_BOLETOS_POR_RESERVA", "20")
+    return int(_repo.get_config("max_boletos_por_reserva", default))
+
+
+def guardar_max_boletos(max_boletos: int) -> None:
+    _repo.set_config("max_boletos_por_reserva", str(max_boletos))
+
+
 def imagen_principal(imagenes: list[ImagenMeta]) -> ImagenMeta | None:
     if not imagenes:
         return None

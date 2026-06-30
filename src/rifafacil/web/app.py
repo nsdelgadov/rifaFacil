@@ -15,11 +15,13 @@ from rifafacil.web.store import (
     ImagenMeta,
     guardar_campaign_link,
     guardar_imagenes,
+    guardar_max_boletos,
     guardar_rifa,
     guardar_refresh_segundos,
     imagen_principal,
     obtener_campaign_link,
     obtener_imagenes,
+    obtener_max_boletos,
     obtener_rifa,
     obtener_refresh_segundos,
     obtener_uploads_dir,
@@ -201,12 +203,28 @@ async def panel_admin(request: Request, _: None = Depends(_verificar_admin)):
             "rifa": rifa,
             "boletos_filtrados": _filtrar_y_ordenar(rifa.boletos, "numero", "asc", ""),
             "refresh_segundos": obtener_refresh_segundos(),
+            "max_boletos": obtener_max_boletos(),
             "orden": "numero",
             "dir": "asc",
             "q": "",
             "campaign_link": obtener_campaign_link(),
             "imagenes": imagenes,
         },
+    )
+
+
+@app.post("/admin/config/max-boletos", response_class=HTMLResponse)
+async def admin_config_max_boletos(
+    request: Request,
+    max_boletos: int = Form(),
+    _: None = Depends(_verificar_admin),
+):
+    max_boletos = max(1, max_boletos)
+    guardar_max_boletos(max_boletos)
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/partials/config_max_boletos.html",
+        context={"max_boletos": max_boletos},
     )
 
 
