@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, status
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile, status
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
@@ -100,6 +100,7 @@ async def index(request: Request):
         context={
             "rifa": obtener_rifa(),
             "refresh_segundos": obtener_refresh_segundos(),
+            "max_boletos": obtener_max_boletos(),
             "imagenes": imagenes,
             "campaign_link": obtener_campaign_link(),
         },
@@ -111,50 +112,78 @@ async def grilla_boletos(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="partials/grilla.html",
-        context={"rifa": obtener_rifa(), "refresh_segundos": obtener_refresh_segundos()},
+        context={
+            "rifa": obtener_rifa(),
+            "refresh_segundos": obtener_refresh_segundos(),
+            "max_boletos": obtener_max_boletos(),
+        },
     )
 
 
-@app.get("/boletos/{numero}/formulario", response_class=HTMLResponse)
-async def formulario_reserva(request: Request, numero: int):
-    boleto = obtener_rifa().obtener_boleto(numero)
+@app.get("/boletos/formulario", response_class=HTMLResponse)
+async def formulario_reserva_multiple(request: Request, numeros: str = Query(default="")):
+    try:
+        lista = [int(n.strip()) for n in numeros.split(",") if n.strip()]
+    except ValueError:
+        return templates.TemplateResponse(
+            request=request, name="partials/error.html", context={"mensaje": "Números inválidos"}
+        )
+    if not lista:
+        return templates.TemplateResponse(
+            request=request, name="partials/error.html", context={"mensaje": "Sin boletos seleccionados"}
+        )
+    rifa = obtener_rifa()
+    try:
+        boletos_sel = [rifa.obtener_boleto(n) for n in lista]
+    except ValueError as e:
+        return templates.TemplateResponse(
+            request=request, name="partials/error.html", context={"mensaje": str(e)}
+        )
     return templates.TemplateResponse(
         request=request,
         name="partials/formulario.html",
-        context={"boleto": boleto},
+        context={"boletos": boletos_sel},
     )
 
 
-@app.post("/boletos/{numero}/reservar", response_class=HTMLResponse)
-async def reservar_boleto(
+@app.post("/boletos/reservar", response_class=HTMLResponse)
+async def reservar_boletos_multiple(
     request: Request,
-    numero: int,
+    numeros: list[int] = Form(),
     nombre: str = Form(),
     telefono: str = Form(),
 ):
     rifa = obtener_rifa()
     try:
         participante = Participante(nombre=nombre, telefono=Telefono(numero=telefono))
-        rifa.reservar_boleto(numero=numero, participante=participante, reservado_en=datetime.now())
+        rifa.reservar_boletos(numeros=numeros, participante=participante, reservado_en=datetime.now())
         guardar_rifa(rifa)
     except ValueError as e:
         return templates.TemplateResponse(
-            request=request,
-            name="partials/error.html",
-            context={"mensaje": str(e)},
+            request=request, name="partials/error.html", context={"mensaje": str(e)}
         )
 
-    mensaje_admin = (
-        f"Hola! Reservé el boleto N°{numero:03d} de {rifa.nombre}. "
-        f"Soy {nombre}, mi teléfono es {telefono}. "
-        f"Quedo atento para la transferencia de {_pesos(rifa.precio_boleto)}."
-    )
+    total = rifa.precio_boleto * len(numeros)
+    if len(numeros) == 1:
+        nums_fmt = f"N°{numeros[0]:03d}"
+        msg = (
+            f"Hola! Reservé el boleto {nums_fmt} de {rifa.nombre}. "
+            f"Soy {nombre}, mi teléfono es {telefono}. "
+            f"Quedo atento para la transferencia de {_pesos(total)}."
+        )
+    else:
+        nums_fmt = ", ".join(f"N°{n:03d}" for n in numeros)
+        msg = (
+            f"Hola! Reservé {len(numeros)} boletos ({nums_fmt}) de {rifa.nombre}. "
+            f"Soy {nombre}, mi teléfono es {telefono}. "
+            f"Quedo atento para la transferencia de {_pesos(total)}."
+        )
     return templates.TemplateResponse(
         request=request,
         name="partials/confirmacion.html",
         context={
-            "numero": numero,
-            "enlace_admin": rifa.telefono_admin.enlace_whatsapp(mensaje_admin),
+            "numeros": numeros,
+            "enlace_admin": rifa.telefono_admin.enlace_whatsapp(msg),
         },
     )
 
